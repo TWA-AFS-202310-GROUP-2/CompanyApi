@@ -20,6 +20,44 @@ namespace CompanyApi.Controllers
             return StatusCode(StatusCodes.Status201Created, companyCreated);
         }
 
+        [HttpGet]
+        public ActionResult<List<Company>> GetAllComanies()
+        {
+            return Ok(companies);
+        }
+
+        [HttpGet("{name}")]
+        public ActionResult<List<Company>> GetOneComany(string name)
+        {
+            if (!companies.Exists(company => company.Name.Equals(name)))
+            {
+                return BadRequest();
+            }
+
+            Company company = companies.Find(c => c.Name == name);
+            return StatusCode(StatusCodes.Status200OK, company);
+        }
+
+        [HttpGet("{PageIndex}/{PageSize}")]
+        public ActionResult<List<Company>> GetComanyList(int pageIndex, int pageSize)
+        {
+            int companyNumberBeforeIndex = pageSize * (pageIndex - 1);
+            if (companyNumberBeforeIndex > companies.Count)
+            {
+                return BadRequest();
+            }
+            int companyLeft = companies.Count - companyNumberBeforeIndex;
+            if (companyLeft > pageSize)
+            {
+                return Ok(companies.GetRange(companyNumberBeforeIndex, pageSize));
+            }
+            else
+            {
+                return Ok(companies.GetRange(companyNumberBeforeIndex, companyLeft));
+            }
+        }
+
+
         [HttpDelete]
         public void ClearData()
         { 
