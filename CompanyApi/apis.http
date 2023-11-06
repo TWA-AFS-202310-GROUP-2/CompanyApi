@@ -23,7 +23,7 @@ Content-Type: application/json; charset=utf-8
 ## Response:
 ### Case1:  Company Created Success, Return Company created with Status Created( 201 )
 ### Case2:  Company Name Exsiting, Return 400 Bad request
-### Case3:  Other Bad Reqeust ( Request Body Not Valid )
+### Case3:  Other Bad Reqeust ( Request Body Not Valid ) wrong companyid name
 
 ######################################################################################
 
@@ -59,3 +59,58 @@ Content-Type: application/json; charset=utf-8
 ### Case2: 404 Company NOT Found
 
 ######################################################################################
+
+## AC6 Add Employee to Company 
+POST https://{{hostname}}:{{port}}/api/Companies/{companyID}/Employee/{employeeID}
+Content-Type: application/json; charset=utf-8
+
+{
+  "name": Tom,
+  "salary": 10000
+}
+### Response: 
+### Case1: Sucess with the employee created
+### Case2: 404 Company NOT Found
+
+# ######################################################################################
+
+## AC7 Delete Employee under Company 
+DELETE https://{{hostname}}:{{port}}/api/Companies/{companyID}/employee/{employeeID}
+Content-Type: application/json; charset=utf-8
+
+### Response: 
+### Case1: Sucess with 204 No Content
+### Case2: 404 Company NOT Found
+### Case3: 404 Employee Not Found
+
+# ######################################################################################
+
+## AC8 Get All Employee under given company
+GET https://{{hostname}}:{{port}}/api/Companies/{companyID}/Employee
+Content-Type: application/json; charset=utf-8
+
+### Response: 
+### Case1: Sucess with List of employee
+### Case2: 404 Company NOT Found
+
+# ######################################################################################
+
+## AC9 Update specific Employee under given company
+PUT https://{{hostname}}:{{port}}/api/Companies/{companyID}/employee/{employeeId}
+Content-Type: application/json; charset=utf-8
+
+### Response: 
+### Case1: Success 200 OK
+### Case2: 404 Company NOT Found
+
+# ######################################################################################
+
+## AC10 Delete Company with all belongs employees
+DELETE https://{{hostname}}:{{port}}/api/Companies/{companyID}
+Content-Type: application/json; charset=utf-8
+
+### Response: 
+### Case1: 204 No Content
+### Case2: 404 Company NOT Found
+
+# ######################################################################################
