@@ -230,8 +230,22 @@ namespace CompanyApiTest
             HttpResponseMessage httpResponseMessage3 = await httpClient.PostAsJsonAsync($"api/companies/12333", employee);
 
             Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage3.StatusCode);
+        }
+        [Fact]
+        public async Task Should_return_company_with_null_employee_when_delete_employee_given_employeeId_companyId()
+        {
+            await ClearDataAsync();
+            var httpResponseMessage = await httpClient.PostAsync("api/companies", SerializeObjectToContent(new CreateCompanyRequest("Ski")));
+            var newCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+
+            Employee employee = new Employee("worker", "1234");
+            HttpResponseMessage httpResponseMessage2 = await httpClient.PostAsJsonAsync($"api/companies/{newCreated.Id}", employee);
+
+            HttpResponseMessage httpResponseMessage3 = await httpClient.DeleteAsync($"api/companies/{newCreated.Id}/{employee.Id}");
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage3.StatusCode);
+            var result = await httpResponseMessage3.Content.ReadFromJsonAsync<Company>();
+            Assert.Null(result.Employee);
 
         }
-
     }
 }

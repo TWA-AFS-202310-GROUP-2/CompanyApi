@@ -87,6 +87,23 @@ namespace CompanyApi.Controllers
 
         }
 
+        [HttpDelete("{companyId}/{employeeId}")]
+        public ActionResult<Company> DeleteEmployee(string companyId, string employeeId)
+        {
+            if (!companies.Exists(company => company.Id.Equals(companyId)))
+            {
+                return BadRequest();
+            }
+            var company = companies.Find(w => w.Id == companyId);
+            if (company.Employee.Id != employeeId)
+            {
+                return BadRequest();
+            }
+            company.Employee = null;
+            companies[companies.IndexOf(companies.Find(cp => cp.Id == companyId))] = company;
+            return Ok(company);
+        }
+
         [HttpDelete]
         public void ClearData()
         {
