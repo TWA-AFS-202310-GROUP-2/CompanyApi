@@ -223,6 +223,53 @@ namespace CompanyApiTest
             Assert.Empty(companies);
         }
 
+        [Fact]
+        public async Task Should_return_updated_company_when_update_company_given_company_id_and_new_info()
+        {   
+            // Given
+            await ClearDataAsync();
+            var companyGiven = new CreateCompanyRequest
+            {
+                Name = "BlueSky Digital Media"
+            };
+            var httpResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var companyCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            Assert.NotNull(companyCreated);
+            Assert.NotNull(companyCreated.Id);
+            var companyUpdateRequest = new UpdateCompanyRequest
+            {
+                Name = "ThoughtWorks"
+            };
+
+            // When
+            httpResponseMessage = await httpClient.PutAsJsonAsync($"/api/companies/{companyCreated.Id}", companyUpdateRequest);
+
+            // Then
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+            var companyUpdated = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            Assert.NotNull(companyUpdated);
+            Assert.Equal(companyCreated.Id, companyUpdated.Id);
+            Assert.Equal(companyUpdateRequest.Name, companyUpdated.Name);
+        }
+
+        [Fact]
+        public async Task Should_return_not_found_when_update_company_given_not_existed_company_id()
+        {
+            // Given
+            await ClearDataAsync();
+            var companyUpdateRequest = new UpdateCompanyRequest
+            {
+                Name = "ThoughtWorks"
+            };
+
+            // When
+            var httpResponseMessage = await httpClient.PutAsJsonAsync($"/api/companies/{Guid.NewGuid().ToString()}", companyUpdateRequest);
+
+            // Then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+        }
+
+
         private async Task ClearDataAsync()
         {
             await httpClient.DeleteAsync("/api/companies");

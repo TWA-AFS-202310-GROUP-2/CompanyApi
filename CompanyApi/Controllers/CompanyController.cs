@@ -59,6 +59,17 @@ namespace CompanyApi.Controllers
                 return Ok(new List<Company>());
             }
         }
+        [HttpPut("{id}")]
+        public ActionResult<Company> Update(string id, [FromBody] UpdateCompanyRequest request)
+        {
+            var company = companies.FirstOrDefault(c => c.Id == id);
+            if (company == null) return NotFound();
+            
+            company.Name = request.Name;
+            companies[companies.FindIndex(c => c.Id == id)] = company;
+            return Ok(company);
+        }
+
 
         [HttpDelete]
         public void ClearData()
