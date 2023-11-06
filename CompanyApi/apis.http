@@ -93,3 +93,17 @@ Get https://{{hostname}}:{{port}}/api/companies/{companyId}/employees
 ### Case2: 404 not found
 
 ##################################################################################
+####
+
+## AC9 update employee by EmployeeId and CompanyId
+PUT https://{{hostname}}:{{port}}/api/companies/{companyId}/employees/{employeeId}
+ 
+{
+  "name": "Tom"
+  "salary": 3000
+}
+### Response:
+### Case1: Sucess, 204 NO Content
+### Case2: 404 not found
+
+##################################################################################
