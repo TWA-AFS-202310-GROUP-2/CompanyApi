@@ -26,6 +26,21 @@ namespace CompanyApi.Controllers
             return Ok(companies);
         }
 
+        [HttpGet("{id}")]
+        public ActionResult<Company> GetById(string id)
+        {
+            if (Guid.TryParse(id, out Guid guid) == false || guid == Guid.Empty )
+            {
+                return BadRequest();
+            }
+            Company? company = companies.Find(company => company.Id.Equals(id));
+            if (company == null)
+            {
+                return NotFound();
+            }
+            return Ok(company);
+        }
+
         [HttpDelete]
         public void ClearData()
         { 

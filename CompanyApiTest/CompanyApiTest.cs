@@ -97,6 +97,53 @@ namespace CompanyApiTest
             Assert.Equal(2, companies.Count);
         }
 
+        [Fact]
+        public async Task Should_return_company_when_get_company_given_existed_company_id()
+        {
+            // Given
+            await ClearDataAsync();
+            var companyGiven = new CreateCompanyRequest
+            {
+                Name = "BlueSky Digital Media"
+            };
+            var httpResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var companyCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            Assert.NotNull(companyCreated);
+            Assert.NotNull(companyCreated.Id);
+
+            // When
+            httpResponseMessage = await httpClient.GetAsync($"/api/companies/{companyCreated.Id}");
+           
+            // Then
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+            var company = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            Assert.NotNull(company);
+            Assert.Equal(companyCreated.Id, company.Id);
+            Assert.Equal(companyCreated.Name, company.Name);
+        }
+
+        [Fact]
+        public async Task Should_return_not_found_when_get_company_given_not_existed_company_id()
+        {
+            // Given
+            await ClearDataAsync();
+            var companyGiven = new CreateCompanyRequest
+            {
+                Name = "BlueSky Digital Media"
+            };
+            var httpResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var companyCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            Assert.NotNull(companyCreated);
+            Assert.NotNull(companyCreated.Id);
+
+
+            // When
+            httpResponseMessage = await httpClient.GetAsync($"/api/companies/{Guid.NewGuid().ToString()}");
+
+            // Then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+        }
+
         private async Task ClearDataAsync()
         {
             await httpClient.DeleteAsync("/api/companies");
