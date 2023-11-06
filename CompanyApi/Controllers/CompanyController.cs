@@ -15,7 +15,7 @@ namespace CompanyApi.Controllers
         }
 
         [HttpGet("{Id}")]
-        public ActionResult<Company> GetByName(string Id)
+        public ActionResult<Company> GetById(string Id)
         {
             for (int i = 0; i < companies.Count; i++)
             {
@@ -25,6 +25,19 @@ namespace CompanyApi.Controllers
                 }
             }
             return StatusCode(StatusCodes.Status404NotFound);
+        }
+
+        [HttpGet("{pageSize}/{pageIndex}")]
+        public ActionResult<List<Company>> GetByPageInfo(int pageSize, int pageIndex)
+        {
+            List<Company> resCompanies = new List<Company>();
+
+            for (int i = pageSize * pageIndex; i < pageSize * (pageIndex + 1); i++)
+            {
+                if (i == companies.Count) break;
+                resCompanies.Add(companies[i]);
+            }
+            return StatusCode(StatusCodes.Status200OK, resCompanies);
         }
 
         [HttpPost]

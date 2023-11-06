@@ -165,5 +165,43 @@ namespace CompanyApiTest
             // Then
             Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage3.StatusCode);
         }
+
+        [Fact]
+        public async Task Should_return_company_with_status_200_when_get_by_pageInfo()
+        {
+            // Given
+            await ClearDataAsync();
+            Company companyGiven = new Company("BlueSky Digital Media");
+
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(
+                "/api/companies",
+                SerializeObjectToContent(companyGiven)
+            );
+
+            Company companyGiven2 = new Company("RedSky Digital Media");
+
+            HttpResponseMessage httpResponseMessage2 = await httpClient.PostAsync(
+                "/api/companies",
+                SerializeObjectToContent(companyGiven2)
+            );
+
+            Company companyGiven3 = new Company("GreenSky Digital Media");
+
+            HttpResponseMessage httpResponseMessage3 = await httpClient.PostAsync(
+                "/api/companies",
+                SerializeObjectToContent(companyGiven3)
+            );
+
+            HttpResponseMessage httpResponseMessage4 = await httpClient.GetAsync(
+                "/api/companies/1/1"
+            );
+
+            // Then
+            List<Company>? company = await DeserializeTo<List<Company>>(httpResponseMessage4);
+
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage4.StatusCode);
+            Assert.Equal(companyGiven2.Name, company[0].Name);
+        }
     }
 }
