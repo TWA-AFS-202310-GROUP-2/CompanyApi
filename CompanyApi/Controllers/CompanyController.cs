@@ -66,8 +66,24 @@ namespace CompanyApi.Controllers
                 return BadRequest();
             }
 
-            companies[companies.IndexOf(companies.Find(cp => cp.Id == id))] = new Company(newCompany.Name);
-            return Ok(newCompany);
+            var updatedCompany = new Company(newCompany.Name);
+            companies[companies.IndexOf(companies.Find(cp => cp.Id == id))] = updatedCompany;
+            return Ok(updatedCompany);
+
+        }
+
+        [HttpPost("{id}")]
+        public ActionResult<Company> UpdateEmployeeToCompany(string companyId, [FromBody] Employee employee)
+        {
+            if (!companies.Exists(company => company.Id.Equals(companyId)))
+            {
+                return BadRequest();
+            }
+
+            var company = companies.Find(w=>w.Id==companyId);
+            company.Employee = employee;
+            companies[companies.IndexOf(companies.Find(cp => cp.Id == companyId))] = company;
+            return Ok(company);
 
         }
 

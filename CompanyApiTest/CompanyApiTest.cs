@@ -178,11 +178,11 @@ namespace CompanyApiTest
         public async Task Should_return_badrequest_when_update_company_given_company_wrong_id()
         {
             await ClearDataAsync();
-            await httpClient.PostAsync("api/companies", SerializeObjectToContent(new Company("Skk")));
-            await httpClient.PostAsync("api/companies", SerializeObjectToContent(new Company("Ski")));
-            var company = new CreateCompanyRequest("1234");
+            await httpClient.PostAsync("api/companies", SerializeObjectToContent(new CreateCompanyRequest("Skk")));
+            var httpMessage = await httpClient.PostAsync("api/companies", SerializeObjectToContent(new CreateCompanyRequest("Ski")));
+            var company = await httpMessage.Content.ReadFromJsonAsync<Company>();
 
-            HttpResponseMessage httpResponseMessage3 = await httpClient.PutAsJsonAsync($"api/companies/123455",company);
+            HttpResponseMessage httpResponseMessage3 = await httpClient.PutAsJsonAsync($"api/companies/1234",new CreateCompanyRequest(company.Name));
 
             Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage3.StatusCode);
         }
@@ -196,11 +196,26 @@ namespace CompanyApiTest
             var newCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
 
             newCreated.Name = "SSkkii";
-            HttpResponseMessage httpResponseMessage3 = await httpClient.PutAsJsonAsync($"api/companies/{newCreated.Id}", newCreated);
+            HttpResponseMessage httpResponseMessage3 = await httpClient.PutAsJsonAsync($"api/companies/{newCreated.Id}", new CreateCompanyRequest(newCreated.Name));
 
             Assert.Equal(HttpStatusCode.OK, httpResponseMessage3.StatusCode);
             var result = await httpResponseMessage3.Content.ReadFromJsonAsync<Company>();
             Assert.Equal(newCreated.Name,result.Name);
+
+        }
+        [Fact]
+        public async Task Should_return_updated_employee_when_update_company_given_employee_name()
+        {
+            await ClearDataAsync();
+            var httpResponseMessage = await httpClient.PostAsync("api/companies", SerializeObjectToContent(new CreateCompanyRequest("Ski")));
+            var newCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+
+            Employee employee = new Employee("worker", "1234");
+            HttpResponseMessage httpResponseMessage3 = await httpClient.PostAsJsonAsync($"api/companies/{newCreated.Id}", employee);
+
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage3.StatusCode);
+            var result = await httpResponseMessage3.Content.ReadFromJsonAsync<Company>();
+            Assert.Equal(employee.Name, result.Employee.Name);
 
         }
 
