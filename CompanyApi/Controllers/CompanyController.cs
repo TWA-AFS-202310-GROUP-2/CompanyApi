@@ -8,6 +8,25 @@ namespace CompanyApi.Controllers
     {
         private static List<Company> companies = new List<Company>();
 
+        [HttpGet]
+        public ActionResult<List<Company>> GetAll()
+        {
+            return StatusCode(StatusCodes.Status200OK, companies);
+        }
+
+        [HttpGet("{Id}")]
+        public ActionResult<Company> GetByName(string Id)
+        {
+            for (int i = 0; i < companies.Count; i++)
+            {
+                if (companies[i].Id == Id)
+                {
+                    return StatusCode(StatusCodes.Status200OK, companies[i]);
+                }
+            }
+            return StatusCode(StatusCodes.Status404NotFound);
+        }
+
         [HttpPost]
         public ActionResult<Company> Create(CreateCompanyRequest request)
         {
@@ -21,9 +40,10 @@ namespace CompanyApi.Controllers
         }
 
         [HttpDelete]
-        public void ClearData()
+        public ActionResult<string> ClearData()
         { 
             companies.Clear();
+            return StatusCode(StatusCodes.Status204NoContent);
         }
     }
 }
