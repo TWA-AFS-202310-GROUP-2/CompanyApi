@@ -75,6 +75,47 @@ namespace CompanyApiTest
             return deserializedObject;
         }
 
+        [Fact]
+        public async Task Should_return_all_companied_when_get_given_no_company()
+        {
+            //Given
+            await ClearDataAsync();
+            //when
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync("api/companies");
+            List<Company> companyCreated = await DeserializeTo<List<Company>>(httpResponseMessage);
+            //then
+            Assert.Equal(0, companyCreated.Count);
+        }
+
+        [Fact]
+        public async Task Should_return_all_companied_when_get_given_an_company()
+        {
+            //Given
+            await ClearDataAsync();
+            Company companyGiven = new Company("BlueSky Digital Media");
+            await httpClient.PostAsync("/api/companies", SerializeObjectToContent(companyGiven));
+            //when
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync("api/companies");
+            List<Company> allcompany = await DeserializeTo<List<Company>>(httpResponseMessage);
+            //then
+            Assert.Equal(companyGiven.Name, allcompany[0].Name);
+        }
+
+        [Fact]
+        public async Task Should_return_an_selected_company_When_get_Given_an_name()
+        {
+            //Given
+            await ClearDataAsync();
+            string name = "test by id";
+            Company givencompany = new Company(name);
+            await httpClient.PostAsync("/api/companies", SerializeObjectToContent(givencompany));
+            //When
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"api/companies/{name}");
+            Company selectedcompany = await DeserializeTo<Company>(httpResponseMessage);
+            //then
+            Assert.Equal(givencompany.Name, selectedcompany.Name);
+        }
+
         private static StringContent SerializeObjectToContent<T>(T objectGiven)
         {
             return new StringContent(JsonConvert.SerializeObject(objectGiven), Encoding.UTF8, "application/json");

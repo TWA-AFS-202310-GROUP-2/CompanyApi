@@ -2,6 +2,10 @@
 {
     public class Company
     {
+        public Company()
+        {
+        }
+
         public Company(string name)
         {
             Id = Guid.NewGuid().ToString();
