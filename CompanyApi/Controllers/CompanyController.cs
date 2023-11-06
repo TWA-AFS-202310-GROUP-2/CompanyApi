@@ -29,7 +29,7 @@ namespace CompanyApi.Controllers
         [HttpGet("{id}")]
         public ActionResult<Company> Get(string id)
         {
-            var company = companies.Where(c=>c.Id==id).FirstOrDefault();
+            var company = companies.Where(c => c.Id == id).FirstOrDefault();
             if (company == null)
             {
                 return NotFound();
@@ -40,9 +40,25 @@ namespace CompanyApi.Controllers
             }
         }
 
+        [HttpPut("{id}")]
+        public ActionResult<Company> Put(string id, CreateCompanyRequest company)
+        {
+            var oldCompany = companies.Where(c => c.Id == id).FirstOrDefault();
+
+            if(oldCompany == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                oldCompany.Name = company.Name;
+                return NoContent();
+            }
+        }
+
         [HttpDelete]
         public void ClearData()
-        { 
+        {
             companies.Clear();
         }
     }

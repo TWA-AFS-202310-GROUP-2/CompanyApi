@@ -75,7 +75,8 @@ namespace CompanyApiTest
         {
             //given
             await ClearDataAsync();
-            Company companyGiven = new Company("BlueSky Digital Media");
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
+
             await httpClient.PostAsJsonAsync("api/companies", companyGiven);
             //when
             HttpResponseMessage httpResponseMessage = await httpClient.GetAsync("api/companies");
@@ -91,16 +92,19 @@ namespace CompanyApiTest
         {
             //given
             await ClearDataAsync();
-            Company companyGiven = new Company("BlueSky Digital Media");
+
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
             HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync("api/companies", companyGiven);
             var company = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+
             //when
             HttpResponseMessage httpResponseMessage2 = await httpClient.GetAsync($"api/companies/{company.Id}");
 
             var res = await httpResponseMessage2.Content.ReadFromJsonAsync<Company>();
+
             //then
             Assert.Equal(HttpStatusCode.OK, httpResponseMessage2.StatusCode);
-            Assert.Equal(company.Name, res.Name);
+            Assert.Equal(company.Id, res.Id);
         }
 
         [Fact]
@@ -112,6 +116,39 @@ namespace CompanyApiTest
             HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"api/companies/123");
             //then
             Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_204_when_update_successfully_given_id_and_updatedCompany()
+        {
+            //given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
+            CreateCompanyRequest newCompany = new CreateCompanyRequest("BlueSky Digital");
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync("api/companies", companyGiven);
+            var company = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+
+            //when
+            HttpResponseMessage httpResponseMessage2 = await httpClient.PutAsJsonAsync($"api/companies/{company.Id}", newCompany);
+
+            //then
+            Assert.Equal(HttpStatusCode.NoContent, httpResponseMessage2.StatusCode);
+
+        }
+
+        [Fact]
+        public async Task Should_return_404_when_update_given_not_exist_id_and_updatedCompany()
+        {
+            //given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
+
+            //when
+            HttpResponseMessage httpResponseMessage = await httpClient.PutAsJsonAsync($"api/companies/1234", companyGiven);
+
+            //then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+
         }
 
         private async Task<T?> DeserializeTo<T>(HttpResponseMessage httpResponseMessage)
