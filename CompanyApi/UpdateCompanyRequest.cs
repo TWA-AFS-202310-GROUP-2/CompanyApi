@@ -2,6 +2,6 @@ namespace CompanyApi
 {
     public class UpdateCompanyRequest
     {
-        public string Name { get; set; }
+        public required string Name { get; set; }
     }
 }
