@@ -59,3 +59,60 @@ Content-Type: application/json; charset=utf-8
 ### Case2: 404 Company NOT Found
 
 ######################################################################################
+
+## AC6 Add Employee To Company 
+Post https://{{hostname}}:{{port}}/api/companies/{companyId}/employees
+Content-Type: application/json; charset=utf-8
+
+{
+  "name": Tom,
+  "salary": 4000
+}
+### Response: 
+### Case1: Sucess, 201 Created with Employee
+### Case2: 404 not found
+
+##################################################################################
+####
+
+## AC7 Delete Employee by CompanyId and EmployeeId
+DELETE https://{{hostname}}:{{port}}/api/companies/{companyId}/employees/{employeeId}
+ 
+### Response:
+### Case1: Sucess, 204 NO Content
+### Case2: 404 not found
+
+##################################################################################
+####
+
+## AC8 Get list of Employee By Company Id
+Get https://{{hostname}}:{{port}}/api/companies/{companyId}/employees
+ 
+### Response:
+### Case1: OK 200 with List of Employees of the company
+### Case2: 404 not found
+
+##################################################################################
+####
+
+## AC9 update employee by EmployeeId and CompanyId
+PUT https://{{hostname}}:{{port}}/api/companies/{companyId}/employees/{employeeId}
+ 
+{
+  "name": "Tom"
+  "salary": 3000
+}
+### Response:
+### Case1: Sucess, 204 NO Content
+### Case2: 404 not found
+
+##################################################################################
+
+## AC10 Delete Company by CompanyId (with employees being deleted)
+DELETE https://{{hostname}}:{{port}}/api/companies/{companyId}
+
+### Response:
+### Case1: Sucess, 204 NO Content
+### Case2: 404 not found
+
+##################################################################################
