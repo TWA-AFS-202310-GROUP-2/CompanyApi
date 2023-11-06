@@ -1,6 +1,7 @@
 using CompanyApi;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
+using NuGet.Frameworks;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
@@ -23,13 +24,13 @@ namespace CompanyApiTest
             // Given
             await ClearDataAsync();
             Company companyGiven = new Company("BlueSky Digital Media");
-            
+
             // When
             HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(
-                "/api/companies", 
+                "/api/companies",
                 SerializeObjectToContent(companyGiven)
             );
-           
+
             // Then
             Assert.Equal(HttpStatusCode.Created, httpResponseMessage.StatusCode);
             Company? companyCreated = await DeserializeTo<Company>(httpResponseMessage);
@@ -48,7 +49,7 @@ namespace CompanyApiTest
             // When
             await httpClient.PostAsync("/api/companies", SerializeObjectToContent(companyGiven));
             HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(
-                "/api/companies", 
+                "/api/companies",
                 SerializeObjectToContent(companyGiven)
             );
             // Then
@@ -61,10 +62,10 @@ namespace CompanyApiTest
             // Given
             await ClearDataAsync();
             StringContent content = new StringContent("{\"unknownField\": \"BlueSky Digital Media\"}", Encoding.UTF8, "application/json");
-          
+
             // When
             HttpResponseMessage httpResponseMessage = await httpClient.PostAsync("/api/companies", content);
-           
+
             // Then
             Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage.StatusCode);
         }
@@ -148,6 +149,28 @@ namespace CompanyApiTest
 
             //then
             Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+
+        }
+
+        [Fact]
+        public async Task Should_return_pagesize_companies_from_pageindex_when_get_given_pageSize_and_pageIndex()
+        {
+            //given
+            await ClearDataAsync();
+            for (int i = 0; i < 10; i++)
+            {
+                CreateCompanyRequest companyGiven = new CreateCompanyRequest($"BlueSky Digital Media{i}");
+                await httpClient.PostAsJsonAsync("api/companies", companyGiven);
+            }
+
+            //when
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"api/companies?pageSize=2&pageIndex=3");
+
+            List<Company>? companies = await httpResponseMessage.Content.ReadFromJsonAsync<List<Company>>();
+
+            //then
+            Assert.Equal("BlueSky Digital Media4", companies[0].Name);
+            Assert.Equal(2, companies.Count);
 
         }
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace CompanyApi.Controllers
 {
@@ -21,9 +22,16 @@ namespace CompanyApi.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Company>> Get()
+        public ActionResult<List<Company>> Get(string? pageSize, string? pageIndex)
         {
-            return Ok(companies);
+            if (pageSize == null || pageIndex == null)
+            {
+                return Ok(companies);
+            }
+            else
+            {
+                return companies.Skip(int.Parse(pageSize) * (int.Parse(pageIndex) - 1)).Take(int.Parse(pageSize)).ToList();
+            }
         }
 
         [HttpGet("{id}")]
@@ -45,7 +53,7 @@ namespace CompanyApi.Controllers
         {
             var oldCompany = companies.Where(c => c.Id == id).FirstOrDefault();
 
-            if(oldCompany == null)
+            if (oldCompany == null)
             {
                 return NotFound();
             }
@@ -55,6 +63,7 @@ namespace CompanyApi.Controllers
                 return NoContent();
             }
         }
+
 
         [HttpDelete]
         public void ClearData()
