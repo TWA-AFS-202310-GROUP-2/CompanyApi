@@ -130,6 +130,21 @@ namespace CompanyApi.Controllers
             }
         }
 
+        [HttpDelete("{companyId}")]
+        public ActionResult DeletCompany(string companyId)
+        {
+            var company = companies.FirstOrDefault(c => c.Id == companyId);
+            if(company == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                companies.Remove(company);
+                return NoContent();
+            }
+        }
+
         [HttpDelete]
         public void ClearData()
         {

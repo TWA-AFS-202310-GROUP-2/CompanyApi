@@ -335,6 +335,44 @@ namespace CompanyApiTest
             Assert.Equal(HttpStatusCode.NotFound, httpResponseMessageFinal.StatusCode);
         }
 
+        [Fact]
+        public async Task Should_return_204_and_delete_all_employees_in_the_company_when_delete_COMPANY_successful_given_companyId()
+        {
+            //given
+            await ClearDataAsync();
+
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync("api/companies", companyGiven);
+            var company = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+
+            var employee = new EmployeeRequest(3000, "Tom");
+
+            await httpClient.PostAsJsonAsync($"api/companies/{company.Id}/employees", employee);
+
+
+            //when
+            HttpResponseMessage httpResponseMessageCompany = await httpClient.DeleteAsync($"/api/companies/{company.Id}");
+
+            HttpResponseMessage httpResponseMessageEmployees = await httpClient.GetAsync($"api/companies/{company.Id}/employees");
+
+
+            //then
+            Assert.Equal(HttpStatusCode.NoContent, httpResponseMessageCompany.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessageEmployees.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_404_when_delete_company_given_not_exist_companyId()
+        {
+            //given
+            await ClearDataAsync();
+
+            //when
+            HttpResponseMessage httpResponseMessageFinal = await httpClient.DeleteAsync($"/api/companies/111");
+
+            //then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessageFinal.StatusCode);
+        }
 
         private async Task<T?> DeserializeTo<T>(HttpResponseMessage httpResponseMessage)
         {

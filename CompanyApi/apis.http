@@ -107,3 +107,12 @@ PUT https://{{hostname}}:{{port}}/api/companies/{companyId}/employees/{employeeI
 ### Case2: 404 not found
 
 ##################################################################################
+
+## AC10 Delete Company by CompanyId (with employees being deleted)
+DELETE https://{{hostname}}:{{port}}/api/companies/{companyId}
+
+### Response:
+### Case1: Sucess, 204 NO Content
+### Case2: 404 not found
+
+##################################################################################
