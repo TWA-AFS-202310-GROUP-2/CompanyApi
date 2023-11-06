@@ -9,53 +9,62 @@
 ## GET /api/Companies/{companyID}
 ## GET /api/Companies?pageSize=2&pageIndex=3
 ## PUT /api/Companies/{companyID}
-## DELETE /api/Companies/{companyID} ( Delete employees uner this company in same time )
+# Employee APIS
+## POST /api/Companies/{companyID}/Employees
+## GET /api/Companies/{companyID}/Employees
+## GET /api/Companies/{companyID}/Employees/{employeeId}
+## PUT /api/Companies/{companyID}/Employees/{employeeId}
+## DELETE /api/Companies/{companyID}/Employees/{employeeId}
 
 
-## AC1 Create Company API 
-POST https://{{hostname}}:{{port}}/api/companies
-Content-Type: application/json; charset=utf-8
-
+### Add a Company
+POST http://localhost:5116/api/companies
+Content-Type: application/json
+ 
 {
-  "name": "Google"
+  "name": "New Company"
 }
 
-## Response:
-### Case1:  Company Created Success, Return Company created with Status Created( 201 )
-### Case2:  Company Name Exsiting, Return 400 Bad request
-### Case3:  Other Bad Reqeust ( Request Body Not Valid )
+### Get All Companies
+GET http://localhost:5116/api/companies
 
-######################################################################################
+### Get Specific Company
+GET http://localhost:5116/api/companies/{companyId}
 
-## AC2 Get All Compaines
-GET https://{{hostname}}:{{port}}/api/companies
+### Get Companies with Pagination
+GET http://localhost:5116/api/companies?pageIndex=1&pageSize=5
 
-### Response: OK 200 with List of Companes
-
-######################################################################################
-
-## AC3 Get Company By ID
-GET https://{{hostname}}:{{port}}/api/Companies/{companyID}
-
-### Response: 
-### Case1: OK 200 with The Company Found
-### Case2: 404 Company NOT Found
-
-## AC4 GET Companies with Paging 
-GET https://{{hostname}}:{{port}}/api/Companies?pageSize=2&pageIndex=3
-### Response: OK 200 with List of Companes
-
-######################################################################################
-
-## AC5 Update Company 
-PUT https://{{hostname}}:{{port}}/api/Companies/{companyID}
-Content-Type: application/json; charset=utf-8
-
+### Update Company Information
+PUT http://localhost:5116/api/companies/{companyId}
+Content-Type: application/json
+ 
 {
-  "name": Google
+  "name": "Updated Company Name"
 }
-### Response: 
-### Case1: Sucess, 204 NO Content
-### Case2: 404 Company NOT Found
 
-######################################################################################
+### Add an Employee to a Company
+POST http://localhost:5116/api/companies/{companyId}/employees
+Content-Type: application/json
+ 
+{
+  "name": "New Employee",
+  "salary": 50000
+}
+
+### Delete a Specific Employee
+DELETE http://localhost:5116/api/companies/{companyId}/employees/{employeeId}
+
+### Get All Employees of a Company
+GET http://localhost:5116/api/companies/{companyId}/employees
+
+### Update Employee Information
+PUT http://localhost:5116/api/companies/{companyId}/employees/{employeeId}
+Content-Type: application/json
+ 
+{
+  "name": "Updated Employee Name",
+  "salary": 55000
+}
+ 
+### Delete a Company and Its Employees
+DELETE http://localhost:5116/api/companies/{companyId}
