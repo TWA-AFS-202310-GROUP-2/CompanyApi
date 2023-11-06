@@ -53,7 +53,7 @@ namespace CompanyApiTest
             );
             Company? companyCreated = await DeserializeTo<Company>(httpResponseMessage);
             // When
-            Employee employee = new Employee { Name = "E1",Salary = 500 };
+            Employee employee = new Employee { Name = "E1",Salary = 500,Company = name};
             HttpResponseMessage httpResponseMessageEmployee = await httpClient.PostAsJsonAsync($"api/companies/{name}/employee", employee);
             var employee2 = await httpResponseMessageEmployee.Content.ReadFromJsonAsync<List<Employee>>();
             // Then
@@ -61,6 +61,28 @@ namespace CompanyApiTest
             Assert.Equal("E1", employee2[0].Name);
         }
 
+        [Fact]
+        public async Task Should_return_OK_reqeust_when_delete_an_employee_given_a_Employeename()
+        {
+            //Given
+            await ClearDataAsync();
+            string name = "company1";
+            string emplyeeName = "e1";
+            Company companyGiven = new Company(name);
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(
+                "/api/companies",
+                SerializeObjectToContent(companyGiven)
+            );
+            Company? companyCreated = await DeserializeTo<Company>(httpResponseMessage);
+            Employee employee = new Employee { Name = emplyeeName, Salary = 500, Company = name };
+            HttpResponseMessage httpResponseMessageEmployee = await httpClient.PostAsJsonAsync($"api/companies/{name}/employee", employee);
+            var employee2 = await httpResponseMessageEmployee.Content.ReadFromJsonAsync<List<Employee>>();
+            //when
+            var result = await httpClient.DeleteAsync($"api/companies/{name}/employee/{emplyeeName}");
+            //then
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        }
         [Fact]
         public async Task Should_return_bad_reqeust_when_create_company_given_a_existed_company_name()
         {

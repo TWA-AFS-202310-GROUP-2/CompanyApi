@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.Design;
 using System.Xml.Linq;
 
@@ -55,18 +56,32 @@ namespace CompanyApi.Controllers
         [HttpPost("{name}/employee")]
         public ActionResult<List<Employee>> CreateEmployee(string name, Employee employee)
         {
-            if (!companies.Exists(company => company.Name.Equals(name)))
-            {
-                return BadRequest();
-            }
+            //if (!companies.Exists(company => company.Name.Equals(name)))
+            //{
+            //    return BadRequest();
+            //}
             List<Employee> employeesOfCompany = new List<Employee>();
             Employee newemployee = new Employee()
             {
                 Name = employee.Name,
                 Salary = employee.Salary,
+                Company = name,
             };
             employeesOfCompany.Add(newemployee);
             return StatusCode(StatusCodes.Status201Created, employeesOfCompany);
+        }
+        [HttpDelete("{name}/employee/{emplyeeName}")]
+        public ActionResult<Company> DeleteEmployee(string name,string employeeName)
+        {
+            Company? company = companies.Find(c => c.Name == name);
+            var employees = company.employees;
+            Employee? employeeToDelete =employees.Find(e => e.Name == employeeName);
+            if (employeeToDelete == null)
+            {
+                return NotFound();
+            }
+            company.employees.Remove(employeeToDelete);
+            return Ok(company);
         }
 
         private static List<Company> GenerateCompanies(int pageIndex, int pageSize)

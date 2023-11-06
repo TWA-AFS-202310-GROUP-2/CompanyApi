@@ -1,4 +1,6 @@
-﻿namespace CompanyApi
+﻿using CompanyApi.Controllers;
+
+namespace CompanyApi
 {
     public class Company
     {
@@ -15,5 +17,6 @@
         public string Id { get; set; }
 
         public string Name { get; set; }
+        public List<Employee> employees { get; set; }
     }
 }
