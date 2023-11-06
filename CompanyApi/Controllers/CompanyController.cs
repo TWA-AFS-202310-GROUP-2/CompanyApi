@@ -30,8 +30,8 @@ namespace CompanyApi.Controllers
         {
             return companies.Where(company =>company.Name == name).FirstOrDefault();
         }
-        [HttpGet(" ")]
-        public async Task<List<Company>> GetByPage([FromQuery]int pageIndex, int pageSize)
+        [HttpGet("pageIndex={pageIndex}&pageSize={pageSize}")]
+        public async Task<List<Company>> GetByPage(int pageIndex, int pageSize)
         {
             List<Company> newcompanies = GenerateCompanies(pageIndex, pageSize);
             return newcompanies.GetRange((pageIndex - 1) * pageSize, pageSize);

@@ -126,7 +126,7 @@ namespace CompanyApiTest
             int pageSize = 2;
             GenerateCompanies(pageIndex, pageSize);
             //when
-            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"api/companies/page?pageIndex={pageIndex}&pageSize={pageSize}");
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"api/companies/pageIndex={pageIndex}&pageSize={pageSize}");
             List <Company> companiesOnPageIndex = await DeserializeTo<List<Company>>(httpResponseMessage);
             //then
             Assert.Equal("new company 9", companiesOnPageIndex[0].Name);
