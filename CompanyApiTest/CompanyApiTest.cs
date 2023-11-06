@@ -268,7 +268,78 @@ namespace CompanyApiTest
             // Then
             Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
         }
+        [Fact]
+        public async Task Should_return_created_employee_with_status_201_when_create_employee_given_a_company_id_and_employee_info()
+        {
+            // Given
+            await ClearDataAsync();
+            var companyGiven = new CreateCompanyRequest
+            {
+                Name = "BlueSky Digital Media"
+            };
+            var httpResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var companyCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            Assert.NotNull(companyCreated);
+            Assert.NotNull(companyCreated.Id);
+            var employeeGiven = new CreateEmployeeRequest
+            {
+                Name = "Tom",
+                Salary = 10000,
+                CompanyId = companyCreated.Id
+            };
 
+            // When
+            httpResponseMessage = await httpClient.PostAsJsonAsync($"/api/companies/{companyCreated.Id}/employees", employeeGiven);
+
+            // Then
+            Assert.Equal(HttpStatusCode.Created, httpResponseMessage.StatusCode);
+            var employeeCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Employee>();
+            Assert.NotNull(employeeCreated);
+            Assert.NotNull(employeeCreated.Id);
+            Assert.Equal(employeeGiven.Name, employeeCreated.Name);
+            Assert.Equal(employeeGiven.Salary, employeeCreated.Salary);
+            Assert.Equal(companyCreated.Id, employeeCreated.CompanyId);
+        }
+        [Fact]
+        public async Task Should_return_not_found_when_create_employee_given_not_existed_company_id()
+        {
+            // Given
+            await ClearDataAsync();
+            var employeeGiven = new CreateEmployeeRequest
+            {
+                Name = "Tom",
+                Salary = 10000,
+                CompanyId = Guid.NewGuid().ToString()
+            };
+
+            // When
+            var httpResponseMessage = await httpClient.PostAsJsonAsync($"/api/companies/{employeeGiven.CompanyId}/employees", employeeGiven);
+
+            // Then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_bad_request_when_update_company_given_company_id_and_new_info_with_unknown_field()
+        {
+            // Given
+            await ClearDataAsync();
+            var companyGiven = new CreateCompanyRequest
+            {
+                Name = "BlueSky Digital Media"
+            };
+            var httpResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var companyCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            Assert.NotNull(companyCreated);
+            Assert.NotNull(companyCreated.Id);
+            StringContent content = new StringContent("{\"unknownField\": \"ThoughtWorks\"}", Encoding.UTF8, "application/json");
+
+            // When
+            httpResponseMessage = await httpClient.PutAsync($"/api/companies/{companyCreated.Id}", content);
+
+            // Then
+            Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage.StatusCode);
+        }
 
         private async Task ClearDataAsync()
         {

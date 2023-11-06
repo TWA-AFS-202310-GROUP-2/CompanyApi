@@ -70,6 +70,16 @@ namespace CompanyApi.Controllers
             return Ok(company);
         }
 
+        [HttpPost("{companyId}/employees")]
+        public ActionResult<Employee> AddEmployee(string companyId, [FromBody] CreateEmployeeRequest request)
+        {
+            var company = companies.FirstOrDefault(c => c.Id == companyId);
+            if (company == null) return NotFound();
+
+            Employee employee = new Employee(request.Name, request.Salary, request.CompanyId);
+            company.Employees.Add(employee);
+            return StatusCode(StatusCodes.Status201Created, employee);
+        }
 
         [HttpDelete]
         public void ClearData()
