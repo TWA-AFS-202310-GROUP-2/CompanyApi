@@ -294,5 +294,48 @@ namespace CompanyApiTest
             // Then
             Assert.Equal(HttpStatusCode.NoContent, httpResponseMessage3.StatusCode);
         }
+
+        [Fact]
+        public async Task Should_return_all_employees_when_get_all_employees()
+        {
+            // Given
+            await ClearDataAsync();
+            Company companyGiven = new Company("BlueSky Digital Media");
+
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(
+                "/api/companies",
+                SerializeObjectToContent(companyGiven)
+            );
+
+            Employee employeeGiven = new Employee("Employee1", 100);
+            Company? company = await DeserializeTo<Company>(httpResponseMessage);
+
+            // When
+            HttpResponseMessage httpResponseMessage2 = await httpClient.PostAsync(
+                "/api/companies/" + company.Id + "/employees",
+                SerializeObjectToContent(employeeGiven)
+            );
+
+            Employee employeeGiven2 = new Employee("Employee2", 200);
+            HttpResponseMessage httpResponseMessage3 = await httpClient.PostAsync(
+                "/api/companies/" + company.Id + "/employees",
+                SerializeObjectToContent(employeeGiven2)
+            );
+
+            // Then
+            Assert.Equal(HttpStatusCode.Created, httpResponseMessage2.StatusCode);
+            Employee? employeeCreated = await DeserializeTo<Employee>(httpResponseMessage2);
+            Employee? employeeCreated2 = await DeserializeTo<Employee>(httpResponseMessage3);
+
+            HttpResponseMessage httpResponseMessage4 = await httpClient.GetAsync(
+                "/api/companies/" + company.Id + "/employees"
+            );
+
+            List<Employee>? employeeListCreated = await DeserializeTo<List<Employee>>(httpResponseMessage4);
+
+            Assert.Equal(employeeGiven.Name, employeeListCreated[0].Name);
+            Assert.Equal(employeeGiven2.Name, employeeListCreated[1].Name);
+        }
     }
 }

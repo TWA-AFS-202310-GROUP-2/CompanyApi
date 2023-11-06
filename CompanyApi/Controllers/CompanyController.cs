@@ -41,6 +41,20 @@ namespace CompanyApi.Controllers
             return StatusCode(StatusCodes.Status200OK, resCompanies);
         }
 
+        [HttpGet("{Id}/employees")]
+        public ActionResult<Employee> GetEmployees(string Id)
+        {
+            for (int i = 0; i < companies.Count; i++)
+            {
+                if (companies[i].Id == Id)
+                {
+                    return StatusCode(StatusCodes.Status201Created, companies[i].EmployeeList);
+                }
+            }
+
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
+
         [HttpPut("{Id}")]
         public ActionResult<Company> Put(string Id, CreateCompanyRequest request)
         {
