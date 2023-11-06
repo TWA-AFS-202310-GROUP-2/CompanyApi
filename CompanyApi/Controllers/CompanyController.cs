@@ -66,6 +66,22 @@ namespace CompanyApi.Controllers
             return StatusCode(StatusCodes.Status201Created, companyCreated);
         }
 
+        [HttpPost("{Id}/employees")]
+        public ActionResult<Employee> CreateEmployee(string Id, CreateEmployeeRequest request)
+        {
+            for (int i = 0; i < companies.Count; i++)
+            {
+                if (companies[i].Id == Id)
+                {
+                    Employee employeeCreated = new Employee(request.Name, request.Salary);
+                    companies[i].EmployeeList.Add(employeeCreated);
+                    return StatusCode(StatusCodes.Status201Created, employeeCreated);
+                }
+            }
+
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
+
         [HttpDelete]
         public ActionResult<string> ClearData()
         { 

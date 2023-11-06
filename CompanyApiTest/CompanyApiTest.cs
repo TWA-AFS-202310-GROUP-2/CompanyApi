@@ -232,5 +232,35 @@ namespace CompanyApiTest
             Assert.Equal(HttpStatusCode.OK, httpResponseMessage2.StatusCode);
             Assert.Equal(newCompany.Name, company2.Name);
         }
+
+        [Fact]
+        public async Task Should_return_created_employee_with_status_201_when_create_employee()
+        {
+            // Given
+            await ClearDataAsync();
+            Company companyGiven = new Company("BlueSky Digital Media");
+
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(
+                "/api/companies",
+                SerializeObjectToContent(companyGiven)
+            );
+
+            Employee employeeGiven = new Employee("Employee1", 100);
+            Company? company = await DeserializeTo<Company>(httpResponseMessage);
+
+            // When
+            HttpResponseMessage httpResponseMessage2 = await httpClient.PostAsync(
+                "/api/companies/" + company.Id + "/employees",
+                SerializeObjectToContent(employeeGiven)
+            );
+
+            // Then
+            Assert.Equal(HttpStatusCode.Created, httpResponseMessage2.StatusCode);
+            Employee? employeeCreated = await DeserializeTo<Employee>(httpResponseMessage2);
+            Assert.NotNull(employeeGiven);
+            Assert.NotNull(employeeGiven.Id);
+            Assert.Equal(employeeGiven.Name, employeeCreated.Name);
+        }
     }
 }
