@@ -40,6 +40,20 @@ namespace CompanyApi.Controllers
             return StatusCode(StatusCodes.Status200OK, resCompanies);
         }
 
+        [HttpPut("{Id}")]
+        public ActionResult<Company> Put(string Id, CreateCompanyRequest request)
+        {
+            for (int i = 0; i < companies.Count; i++)
+            {
+                if (companies[i].Id == Id)
+                {
+                    companies[i].Name = request.Name;
+                    return StatusCode(StatusCodes.Status200OK, companies[i]);
+                }
+            }
+            return StatusCode(StatusCodes.Status404NotFound);
+        }
+
         [HttpPost]
         public ActionResult<Company> Create(CreateCompanyRequest request)
         {
