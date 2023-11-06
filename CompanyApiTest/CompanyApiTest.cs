@@ -1,5 +1,6 @@
 using CompanyApi;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.OpenApi.Any;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
@@ -142,6 +143,84 @@ namespace CompanyApiTest
 
             // Then
             Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_lists_when_get_companies_given_page_and_page_size()
+        {
+            // Given
+            await ClearDataAsync();
+            var companyOne = new CreateCompanyRequest
+            {
+                Name = "BlueSky Digital Media"
+            };
+            var companyTwo = new CreateCompanyRequest
+            {
+                Name = "ThoughtWorks"
+            };
+            await httpClient.PostAsJsonAsync("/api/companies", companyOne);
+            await httpClient.PostAsJsonAsync("/api/companies", companyTwo);
+
+            // When
+            var httpResponseMessage = await httpClient.GetAsync("/api/companies?pageIndex=1&pageSize=1");
+
+            // Then
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+            var companies = await httpResponseMessage.Content.ReadFromJsonAsync<List<Company>>();
+            Assert.NotNull(companies);
+            Assert.Single(companies);
+        }
+
+        [Fact]
+        public async Task Should_return_empty_list_when_get_companies_given_not_existed_page_and_size()
+        {
+            // Given
+            await ClearDataAsync();
+            var companyOne = new CreateCompanyRequest
+            {
+                Name = "BlueSky Digital Media"
+            };
+            var companyTwo = new CreateCompanyRequest
+            {
+                Name = "ThoughtWorks"
+            };
+            await httpClient.PostAsJsonAsync("/api/companies", companyOne);
+            await httpClient.PostAsJsonAsync("/api/companies", companyTwo);
+
+            // When
+            var httpResponseMessage = await httpClient.GetAsync("/api/companies?pageIndex=3&pageSize=1");
+
+            // Then
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+            var companies = await httpResponseMessage.Content.ReadFromJsonAsync<List<Company>>();
+            Assert.NotNull(companies);
+            Assert.Empty(companies);
+        }
+
+        [Fact]
+        public async Task Should_return_empty_list_when_get_companies_given_negative_page_and_size()
+        {
+            // Given
+            await ClearDataAsync();
+            var companyOne = new CreateCompanyRequest
+            {
+                Name = "BlueSky Digital Media"
+            };
+            var companyTwo = new CreateCompanyRequest
+            {
+                Name = "ThoughtWorks"
+            };
+            await httpClient.PostAsJsonAsync("/api/companies", companyOne);
+            await httpClient.PostAsJsonAsync("/api/companies", companyTwo);
+
+            // When
+            var httpResponseMessage = await httpClient.GetAsync("/api/companies?pageIndex=-1&pageSize=-1");
+
+            // Then
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+            var companies = await httpResponseMessage.Content.ReadFromJsonAsync<List<Company>>();
+            Assert.NotNull(companies);
+            Assert.Empty(companies);
         }
 
         private async Task ClearDataAsync()

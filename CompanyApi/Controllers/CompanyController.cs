@@ -20,11 +20,11 @@ namespace CompanyApi.Controllers
             return StatusCode(StatusCodes.Status201Created, companyCreated);
         }
 
-        [HttpGet]
-        public ActionResult<List<Company>> GetAll()
-        {
-            return Ok(companies);
-        }
+        // [HttpGet]
+        // public ActionResult<List<Company>> GetAll()
+        // {
+        //     return Ok(companies);
+        // }
 
         [HttpGet("{id}")]
         public ActionResult<Company> GetById(string id)
@@ -39,6 +39,25 @@ namespace CompanyApi.Controllers
                 return NotFound();
             }
             return Ok(company);
+        }
+
+        [HttpGet]
+        public ActionResult<List<Company>> GetByPage([FromQuery] int pageIndex, [FromQuery] int pageSize)
+        {
+            if (pageIndex > 0 && pageSize > 0)
+            {
+                var pagedCompanies = companies
+                    .Skip((pageIndex - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+                return Ok(pagedCompanies);
+            } else if (pageIndex == 0 && pageSize == 0)
+            {
+                return Ok(companies);
+            } else
+            {
+                return Ok(new List<Company>());
+            }
         }
 
         [HttpDelete]
