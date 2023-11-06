@@ -25,5 +25,25 @@ namespace CompanyApi.Controllers
         { 
             companies.Clear();
         }
+
+        [HttpGet]
+        public List<Company> GetAll()
+        {
+            return companies;
+        }
+
+        [HttpGet("{name}")]
+        public ActionResult<Company> Get(string name)
+        {
+            foreach (var company in companies)
+            {
+                if (name == company.Name)
+                {
+                    return StatusCode(StatusCodes.Status200OK, company);
+                }
+            }
+            
+            return StatusCode(StatusCodes.Status404NotFound);
+        }
     }
 }
