@@ -337,5 +337,42 @@ namespace CompanyApiTest
             Assert.Equal(employeeGiven.Name, employeeListCreated[0].Name);
             Assert.Equal(employeeGiven2.Name, employeeListCreated[1].Name);
         }
+
+        [Fact]
+        public async Task Should_return_changed_employee_when_put()
+        {
+            // Given
+            await ClearDataAsync();
+            Company companyGiven = new Company("BlueSky Digital Media");
+
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(
+                "/api/companies",
+                SerializeObjectToContent(companyGiven)
+            );
+
+            Employee employeeGiven = new Employee("Employee1", 100);
+            Company? company = await DeserializeTo<Company>(httpResponseMessage);
+
+            // When
+            HttpResponseMessage httpResponseMessage2 = await httpClient.PostAsync(
+                "/api/companies/" + company.Id + "/employees",
+                SerializeObjectToContent(employeeGiven)
+            );
+
+            // Then
+            Employee employeeGiven2 = new Employee("Employee2", 200);
+            Company? employeeCreated = await DeserializeTo<Company>(httpResponseMessage2);
+
+            HttpResponseMessage httpResponseMessage3 = await httpClient.PutAsync(
+                "/api/companies/" + company.Id + "/employees/" + employeeCreated.Id,
+                SerializeObjectToContent(employeeGiven2)
+            );
+
+            Employee? employeeCreated2 = await DeserializeTo<Employee>(httpResponseMessage3);
+
+            Assert.Equal(employeeGiven2.Name, employeeCreated2.Name);
+            Assert.Equal(employeeGiven2.Salary, employeeCreated2.Salary);
+        }
     }
 }

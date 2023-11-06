@@ -69,6 +69,27 @@ namespace CompanyApi.Controllers
             return StatusCode(StatusCodes.Status404NotFound);
         }
 
+        [HttpPut("{CompanyId}/employees/{EmployeeId}")]
+        public ActionResult<Employee> PutEmployee(string CompanyId, string EmployeeId, CreateEmployeeRequest request)
+        {
+            for (int i = 0; i < companies.Count; i++)
+            {
+                if (companies[i].Id == CompanyId)
+                {
+                    for (int j = 0; j < companies[i].EmployeeList.Count; j++)
+                    {
+                        if (companies[i].EmployeeList[j].Id == EmployeeId)
+                        {
+                            companies[i].EmployeeList[j].Name = request.Name;
+                            companies[i].EmployeeList[j].Salary = request.Salary;
+                            return StatusCode(StatusCodes.Status200OK, companies[i].EmployeeList[j]);
+                        }
+                    }
+                }
+            }
+            return StatusCode(StatusCodes.Status404NotFound);
+        }
+
         [HttpPost]
         public ActionResult<Company> Create(CreateCompanyRequest request)
         {
