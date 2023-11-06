@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using System.Net;
 using System.Text;
+using System.Xml.Linq;
 
 namespace CompanyApiTest
 {
@@ -116,9 +117,36 @@ namespace CompanyApiTest
             Assert.Equal(givencompany.Name, selectedcompany.Name);
         }
 
+        [Fact]
+        public async Task Should_return_pagesize_companies_from_page_index_When_get_Given_x_size_y_index()
+        {
+            //Given
+            await ClearDataAsync();
+            int pageIndex = 5;
+            int pageSize = 2;
+            GenerateCompanies(pageIndex, pageSize);
+            //when
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"api/companies/page?pageIndex={pageIndex}&pageSize={pageSize}");
+            List <Company> companiesOnPageIndex = await DeserializeTo<List<Company>>(httpResponseMessage);
+            //then
+            Assert.Equal("new company 9", companiesOnPageIndex[0].Name);
+            Assert.Equal("new company 10", companiesOnPageIndex[1].Name);
+        }
+
         private static StringContent SerializeObjectToContent<T>(T objectGiven)
         {
             return new StringContent(JsonConvert.SerializeObject(objectGiven), Encoding.UTF8, "application/json");
+        }
+        private static List<Company> GenerateCompanies(int pageIndex, int pageSize)
+        {
+            List<Company> companies = new List<Company>();
+            for (int i = 1; i <= pageIndex * pageSize; i++)
+            {
+                Company newcompany = new Company($"new company {i}");
+                companies.Add(newcompany);
+            }
+
+            return companies;
         }
 
         private async Task ClearDataAsync()
