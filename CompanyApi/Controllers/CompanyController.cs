@@ -20,6 +20,26 @@ namespace CompanyApi.Controllers
             return StatusCode(StatusCodes.Status201Created, companyCreated);
         }
 
+        [HttpGet]
+        public ActionResult<List<Company>> Get()
+        {
+            return Ok(companies);
+        }
+
+        [HttpGet("{id}")]
+        public ActionResult<Company> Get(string id)
+        {
+            var company = companies.Where(c=>c.Id==id).FirstOrDefault();
+            if (company == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                return Ok(company);
+            }
+        }
+
         [HttpDelete]
         public void ClearData()
         { 
