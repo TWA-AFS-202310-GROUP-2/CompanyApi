@@ -93,6 +93,15 @@ namespace CompanyApi.Controllers
             company.Employees.Remove(employee);
             return NoContent();
         }
+        [HttpGet("{companyId}/employees")]
+        public ActionResult<List<Employee>> GetAllEmployees(string companyId)
+        {
+            var company = companies.FirstOrDefault(c => c.Id == companyId);
+            if (company == null) return NotFound();
+
+            return Ok(company.Employees);
+        }
+
 
 
         [HttpDelete]
