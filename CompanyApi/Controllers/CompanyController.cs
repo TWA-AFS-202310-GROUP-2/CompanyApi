@@ -64,6 +64,26 @@ namespace CompanyApi.Controllers
             }
         }
 
+        [HttpPost("{companyId}/employees")]
+        public ActionResult<Employee> AddEmployee(string companyId, EmployeeRequest employee)
+        {
+            var company = companies.FirstOrDefault(c => c.Id == companyId);
+            if (company == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                Employee newEmployee = new Employee();
+                newEmployee.Salary = employee.Salary;
+                newEmployee.Name = employee.Name;
+                company.Employees.Add(newEmployee);
+
+                return Created("", newEmployee);
+            }
+        }
+
+
 
         [HttpDelete]
         public void ClearData()

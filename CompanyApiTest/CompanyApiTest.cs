@@ -174,6 +174,51 @@ namespace CompanyApiTest
 
         }
 
+
+        [Fact]
+        public async Task Should_return_employee_with_201_when_add_employee_to_the_company_given_companyId_and_Employee()
+        {
+            //given
+            await ClearDataAsync();
+
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync("api/companies", companyGiven);
+            var company = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+
+            var employee = new EmployeeRequest(3000, "Tom");
+
+            //when
+            HttpResponseMessage httpResponseMessage2 = await httpClient.PostAsJsonAsync($"api/companies/{company.Id}/employees", employee);
+
+            var employee2 = await httpResponseMessage2.Content.ReadFromJsonAsync<Employee>();
+
+            var newCompany = await (await httpClient.GetAsync($"api/companies/{company.Id}")).Content.ReadFromJsonAsync<Company>();
+
+            //then
+            Assert.Equal(HttpStatusCode.Created,httpResponseMessage2.StatusCode);
+            Assert.Equal(employee.Name, employee2.Name);
+            Assert.Equal(employee.Salary, employee2.Salary);
+            Assert.Equal(newCompany.Employees[0].Id, employee2.Id);
+            Assert.NotNull(employee2.Id);
+        }
+
+
+        [Fact]
+        public async Task Should_return_404_when_add_employee_to_company_given_not_exist_companyId_and_Employee()
+        {
+            //given
+            await ClearDataAsync();
+
+            var employee = new EmployeeRequest(3000, "Tom");
+
+            //when
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync($"api/companies/111/employees", employee);
+
+            //then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+
+        }
+
         private async Task<T?> DeserializeTo<T>(HttpResponseMessage httpResponseMessage)
         {
             string response = await httpResponseMessage.Content.ReadAsStringAsync();
