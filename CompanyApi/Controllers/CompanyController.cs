@@ -45,5 +45,21 @@ namespace CompanyApi.Controllers
             
             return StatusCode(StatusCodes.Status404NotFound);
         }
+
+        [HttpGet("{pageSize}/{pageIndex}")]
+        public List<Company> ObtainCompaniesFromIndexPageSize(int pageSize, int pageIndex)
+        {
+            int start_index = pageIndex * pageSize;
+            int end_index = start_index + pageSize;
+            if (companies.Count > end_index)
+            {
+                return null;
+            }
+            else
+            {
+                companies.GetRange(start_index, pageSize);
+                return companies;
+            }
+        }
     }
 }

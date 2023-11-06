@@ -2,7 +2,9 @@ using CompanyApi;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace CompanyApiTest
@@ -149,5 +151,41 @@ namespace CompanyApiTest
             //Then
             Assert.Equal(HttpStatusCode.NotFound, getResponseMessage.StatusCode);
         }
+
+        // AC 4: As a user, I can obtain X(page size) companies from index of Y(page index start from 1)
+        [Fact]
+        public async Task Should_return_company_list_when_get_given_page_index_and_size()
+        {
+            await ClearDataAsync();
+            // Given
+            int pageIndex = 0;
+            int pageSize = 2;
+
+            // When
+            Company companyGiven_ac4 = new Company("BlueSky Digital Media 1");
+
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(
+                "/api/companies",
+                SerializeObjectToContent(companyGiven_ac4)
+            );
+
+            Company companyGiven2_ac4 = new Company("RedSky Digital Media 1");
+
+            HttpResponseMessage httpResponseMessage2 = await httpClient.PostAsync(
+                "/api/companies",
+                SerializeObjectToContent(companyGiven2_ac4)
+            );
+
+            HttpResponseMessage getResponseMessage_ac4 = await httpClient.GetAsync(
+                $"/api/companies/{pageSize}/{pageIndex}"
+            );
+
+            List<Company>? companies_ac4 = await DeserializeTo<List<Company>>(getResponseMessage_ac4);
+
+            //Then
+            Assert.Equal(companyGiven2_ac4.Name, companies_ac4[1].Name);
+
+        }
+
     }
 }
