@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.Design;
+using System.Xml.Linq;
 
 namespace CompanyApi.Controllers
 {
@@ -19,6 +21,7 @@ namespace CompanyApi.Controllers
             companies.Add(companyCreated);
             return StatusCode(StatusCodes.Status201Created, companyCreated);
         }
+
         [HttpGet]
         public List<Company> Get()
         {
@@ -28,14 +31,28 @@ namespace CompanyApi.Controllers
         [HttpGet("{name}")]
         public Company Get(string name)
         {
-            return companies.Where(company =>company.Name == name).FirstOrDefault();
+            return companies.Where(company => company.Name == name).FirstOrDefault();
         }
+
         [HttpGet("pageIndex={pageIndex}&pageSize={pageSize}")]
         public async Task<List<Company>> GetByPage(int pageIndex, int pageSize)
         {
             List<Company> newcompanies = GenerateCompanies(pageIndex, pageSize);
             return newcompanies.GetRange((pageIndex - 1) * pageSize, pageSize);
         }
+
+        [HttpPut("{id}")]
+        public ActionResult<Company> Put(string id,[FromBody]CreateCompanyRequest createCompanyRequest)
+        {
+            var index = companies.FindIndex(x => x.Id == id);
+            if (index >= 0)
+            {
+                companies[index].Name = createCompanyRequest.Name;
+                return companies[index];
+            }
+            return NotFound();
+        }
+
 
         private static List<Company> GenerateCompanies(int pageIndex, int pageSize)
         {

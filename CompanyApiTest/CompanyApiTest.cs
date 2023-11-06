@@ -2,6 +2,7 @@ using CompanyApi;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using System.Net;
+using System.Net.Http.Json;
 using System.Text;
 using System.Xml.Linq;
 
@@ -133,6 +134,23 @@ namespace CompanyApiTest
             Assert.Equal("new company 10", companiesOnPageIndex[1].Name);
         }
 
+        [Fact]
+        public async Task Should_return_updated_companiy_When_put_Given_update_name()
+        {
+            //Given
+            string name = "BlueSky Digital Media";
+            Company companyGiven = new Company("BlueSky Digital Media");
+            await httpClient.PostAsync("/api/companies", SerializeObjectToContent(companyGiven));
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"api/companies/{name}");
+            Company selectedcompany = await DeserializeTo<Company>(httpResponseMessage);
+            //when
+            CreateCompanyRequest createCompanyRequest = new CreateCompanyRequest { Name = "new name" };
+            HttpResponseMessage httpPutMessage = await httpClient.PutAsJsonAsync($"/api/companies/{selectedcompany.Id}", createCompanyRequest);
+            Company? companyUpdated = await httpPutMessage.Content.ReadFromJsonAsync<Company>();
+            //then
+            Assert.Equal(HttpStatusCode.OK, httpPutMessage.StatusCode);
+            Assert.Equal("new name", companyUpdated.Name);
+        }
         private static StringContent SerializeObjectToContent<T>(T objectGiven)
         {
             return new StringContent(JsonConvert.SerializeObject(objectGiven), Encoding.UTF8, "application/json");
