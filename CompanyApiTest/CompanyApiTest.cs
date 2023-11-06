@@ -458,6 +458,99 @@ namespace CompanyApiTest
             Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
         }
 
+        [Fact]
+        public async Task Should_return_updated_employee_when_update_employee_given_company_id_and_employee_id_and_new_info()
+        {
+            // Given
+            await ClearDataAsync();
+            var companyGiven = new CreateCompanyRequest
+            {
+                Name = "BlueSky Digital Media"
+            };
+
+            var httpResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var companyCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            Assert.NotNull(companyCreated);
+            Assert.NotNull(companyCreated.Id);
+
+            var employeeGiven = new CreateEmployeeRequest
+            {
+                Name = "Tom",
+                Salary = 10000,
+                CompanyId = companyCreated.Id
+            };
+            httpResponseMessage = await httpClient.PostAsJsonAsync($"/api/companies/{companyCreated.Id}/employees", employeeGiven);
+            var employeeCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Employee>();
+            Assert.NotNull(employeeCreated);
+            Assert.NotNull(employeeCreated.Id);
+
+            var employeeUpdateRequest = new UpdateEmployeeRequest
+            {
+                Name = "Jerry",
+                Salary = 10000,
+                CompanyId = companyCreated.Id
+            };
+
+            // When
+            httpResponseMessage = await httpClient.PutAsJsonAsync($"/api/companies/{companyCreated.Id}/employees/{employeeCreated.Id}", employeeUpdateRequest);
+
+            // Then
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+            var employeeUpdated = await httpResponseMessage.Content.ReadFromJsonAsync<Employee>();
+            Assert.NotNull(employeeUpdated);
+            Assert.Equal(employeeCreated.Id, employeeUpdated.Id);
+            Assert.Equal(employeeUpdateRequest.Name, employeeUpdated.Name);
+            Assert.Equal(employeeUpdateRequest.Salary, employeeUpdated.Salary);
+            Assert.Equal(employeeUpdateRequest.CompanyId, employeeUpdated.CompanyId);
+        }
+
+        [Fact]
+        public async Task Should_return_not_found_when_update_employee_given_not_existed_company_id()
+        {
+            // Given
+            await ClearDataAsync();
+            var employeeUpdateRequest = new UpdateEmployeeRequest
+            {
+                Name = "Jerry",
+                Salary = 10000,
+                CompanyId = Guid.NewGuid().ToString()
+            };
+
+            // When
+            var httpResponseMessage = await httpClient.PutAsJsonAsync($"/api/companies/{employeeUpdateRequest.CompanyId}/employees/{Guid.NewGuid().ToString()}", employeeUpdateRequest);
+
+            // Then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_not_found_when_update_employee_given_not_existed_employee_id_but_existed_company_id()
+        {
+            // Given
+            await ClearDataAsync();
+            var companyGiven = new CreateCompanyRequest
+            {
+                Name = "BlueSky Digital Media"
+            };
+
+            var httpResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var companyCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            Assert.NotNull(companyCreated);
+            Assert.NotNull(companyCreated.Id);
+
+            var employeeUpdateRequest = new UpdateEmployeeRequest
+            {
+                Name = "Jerry",
+                Salary = 10000,
+                CompanyId = companyCreated.Id
+            };
+
+            // When
+            httpResponseMessage = await httpClient.PutAsJsonAsync($"/api/companies/{companyCreated.Id}/employees/{Guid.NewGuid().ToString()}", employeeUpdateRequest);
+
+            // Then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+        }
 
         private async Task ClearDataAsync()
         {

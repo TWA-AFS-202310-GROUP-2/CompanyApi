@@ -102,6 +102,20 @@ namespace CompanyApi.Controllers
             return Ok(company.Employees);
         }
 
+        [HttpPut("{companyId}/employees/{employeeId}")]
+        public ActionResult<Employee> UpdateEmployee(string companyId, string employeeId, [FromBody] UpdateEmployeeRequest request)
+        {
+            var company = companies.FirstOrDefault(c => c.Id == companyId);
+            if (company == null) return NotFound();
+
+            var employee = company.Employees.FirstOrDefault(e => e.Id == employeeId);
+            if (employee == null) return NotFound();
+
+            employee.Name = request.Name;
+            employee.Salary = request.Salary;
+            company.Employees[company.Employees.FindIndex(e => e.Id == employeeId)] = employee;
+            return Ok(employee);
+        }
 
 
         [HttpDelete]
