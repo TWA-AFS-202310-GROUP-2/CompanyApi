@@ -1,8 +1,10 @@
 using CompanyApi;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
+using System.Net.Http.Json;
 using System.Text;
 using Newtonsoft.Json;
+using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 
 namespace CompanyApiTest
 {
@@ -21,7 +23,7 @@ namespace CompanyApiTest
         {
             // Given
             await ClearDataAsync();
-            Company companyGiven = new Company("BlueSky Digital Media");
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
             
             // When
             HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(
@@ -31,7 +33,8 @@ namespace CompanyApiTest
            
             // Then
             Assert.Equal(HttpStatusCode.Created, httpResponseMessage.StatusCode);
-            Company? companyCreated = await DeserializeTo<Company>(httpResponseMessage);
+            //Company? companyCreated = await DeserializeTo<Company>(httpResponseMessage);
+            Company companyCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
             Assert.NotNull(companyCreated);
             Assert.NotNull(companyCreated.Id);
             Assert.Equal(companyGiven.Name, companyCreated.Name);
@@ -89,22 +92,14 @@ namespace CompanyApiTest
         [Fact]
         public async Task Should_return_all_companies_with_status_200_when_get_all()
         {
-            // Given
             await ClearDataAsync();
             Company companyGiven = new Company("BlueSky Digital Media");
-
-            // When
             HttpResponseMessage httpResponseMessage = await httpClient.PostAsync("api/companies",SerializeObjectToContent(companyGiven));
-
             Company companyGiven2 = new Company("RedSky Digital Media");
-
-            // When
             HttpResponseMessage httpResponseMessage2 = await httpClient.PostAsync("api/companies", SerializeObjectToContent(companyGiven2));
-
-            HttpResponseMessage httpResponseMessage3 = await httpClient.GetAsync("/api/companies");
-
-            // Then
-            List<Company>? companies = await DeserializeTo<List<Company>>(httpResponseMessage3);
+            
+            HttpResponseMessage httpResponseMessage3 = await httpClient.GetAsync("api/companies");
+            List<Company> companies = await DeserializeTo<List<Company>>(httpResponseMessage3);
 
             Assert.Equal(HttpStatusCode.OK, httpResponseMessage3.StatusCode);
             Assert.Equal(companyGiven2.Name, companies[1].Name);
@@ -125,7 +120,7 @@ namespace CompanyApiTest
             // When
             HttpResponseMessage httpResponseMessage2 = await httpClient.PostAsync("api/companies", SerializeObjectToContent(companyGiven2));
 
-            HttpResponseMessage httpResponseMessage3 = await httpClient.GetAsync("/api/companies/Sky");
+            HttpResponseMessage httpResponseMessage3 = await httpClient.GetAsync("api/companies/Sky");
 
             // Then
             Company? company = await DeserializeTo<Company>(httpResponseMessage3);
@@ -142,7 +137,7 @@ namespace CompanyApiTest
             HttpResponseMessage httpResponseMessage = await httpClient.PostAsync("api/companies", SerializeObjectToContent(companyGiven));
             Company companyGiven2 = new Company("Sky");
             HttpResponseMessage httpResponseMessage2 = await httpClient.PostAsync("api/companies", SerializeObjectToContent(companyGiven2));
-            HttpResponseMessage httpResponseMessage3 = await httpClient.GetAsync("/api/companies/Fly");
+            HttpResponseMessage httpResponseMessage3 = await httpClient.GetAsync("api/companies/Fly");
 
             Company? company = await DeserializeTo<Company>(httpResponseMessage3);
 
@@ -168,16 +163,45 @@ namespace CompanyApiTest
             Assert.Equal("Skk", company[1].Name);
         }
         [Fact]
-        public async Task Should_return_badrequest_when_get_company_given_pageIndex_pageSize()
+        public async Task Should_return_badrequest_when_get_company_list_given_pageIndex_pageSize()
         {
             await ClearDataAsync();
-            Company companyGiven = new Company("Blue");
-            await httpClient.PostAsync("api/companies", SerializeObjectToContent(companyGiven));
+            await httpClient.PostAsync("api/companies", SerializeObjectToContent(new Company("Skk")));
             await httpClient.PostAsync("api/companies", SerializeObjectToContent(new Company("Ski")));
 
             HttpResponseMessage httpResponseMessage3 = await httpClient.GetAsync("api/companies/2/6");
 
             Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage3.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_badrequest_when_update_company_given_company_wrong_id()
+        {
+            await ClearDataAsync();
+            await httpClient.PostAsync("api/companies", SerializeObjectToContent(new Company("Skk")));
+            await httpClient.PostAsync("api/companies", SerializeObjectToContent(new Company("Ski")));
+            var company = new CreateCompanyRequest("1234");
+
+            HttpResponseMessage httpResponseMessage3 = await httpClient.PutAsJsonAsync($"api/companies/123455",company);
+
+            Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage3.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_updated_company_when_update_company_given_company_id()
+        {
+            await ClearDataAsync();
+            await httpClient.PostAsync("api/companies", SerializeObjectToContent(new CreateCompanyRequest("Skk")));
+            var httpResponseMessage = await httpClient.PostAsync("api/companies", SerializeObjectToContent(new CreateCompanyRequest("Ski")));
+            var newCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+
+            newCreated.Name = "SSkkii";
+            HttpResponseMessage httpResponseMessage3 = await httpClient.PutAsJsonAsync($"api/companies/{newCreated.Id}", newCreated);
+
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage3.StatusCode);
+            var result = await httpResponseMessage3.Content.ReadFromJsonAsync<Company>();
+            Assert.Equal(newCreated.Name,result.Name);
+
         }
 
     }

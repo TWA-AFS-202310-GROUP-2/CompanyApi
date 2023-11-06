@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Xml.Linq;
 
 namespace CompanyApi.Controllers
 {
@@ -27,7 +28,7 @@ namespace CompanyApi.Controllers
         }
 
         [HttpGet("{name}")]
-        public ActionResult<List<Company>> GetOneComany(string name)
+        public ActionResult<Company> GetOneComany(string name)
         {
             if (!companies.Exists(company => company.Name.Equals(name)))
             {
@@ -57,10 +58,22 @@ namespace CompanyApi.Controllers
             }
         }
 
+        [HttpPut("{id}")]
+        public ActionResult<Company> UpdateOneCompany(string id, [FromBody] CreateCompanyRequest newCompany)
+        {
+            if (!companies.Exists(company => company.Id.Equals(id)))
+            {
+                return BadRequest();
+            }
+
+            companies[companies.IndexOf(companies.Find(cp => cp.Id == id))] = new Company(newCompany.Name);
+            return Ok(newCompany);
+
+        }
 
         [HttpDelete]
         public void ClearData()
-        { 
+        {
             companies.Clear();
         }
     }
