@@ -83,6 +83,18 @@ namespace CompanyApi.Controllers
             }
         }
 
+        [HttpGet("{companyId}/employees")]
+        public ActionResult<List<Employee>> GetEmployeesByCompanyId(string companyId) {
+            var company = companies.FirstOrDefault(c=>c.Id == companyId);
+            if (company == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                return Ok(company.Employees);
+            }
+        }
 
 
         [HttpDelete]
