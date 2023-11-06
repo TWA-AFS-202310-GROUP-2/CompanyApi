@@ -552,6 +552,41 @@ namespace CompanyApiTest
             Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
         }
 
+        [Fact]
+        public async Task Should_return_no_content_when_delete_company_given_company_id()
+        {
+            // Given
+            await ClearDataAsync();
+            var companyGiven = new CreateCompanyRequest
+            {
+                Name = "BlueSky Digital Media"
+            };
+
+            var httpResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var companyCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            Assert.NotNull(companyCreated);
+            Assert.NotNull(companyCreated.Id);
+
+            // When
+            httpResponseMessage = await httpClient.DeleteAsync($"/api/companies/{companyCreated.Id}");
+
+            // Then
+            Assert.Equal(HttpStatusCode.NoContent, httpResponseMessage.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_not_found_when_delete_company_given_not_existed_company_id()
+        {
+            // Given
+            await ClearDataAsync();
+
+            // When
+            var httpResponseMessage = await httpClient.DeleteAsync($"/api/companies/{Guid.NewGuid().ToString()}");
+
+            // Then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+        }
+
         private async Task ClearDataAsync()
         {
             await httpClient.DeleteAsync("/api/companies");

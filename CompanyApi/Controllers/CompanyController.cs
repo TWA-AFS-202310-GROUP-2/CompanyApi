@@ -117,6 +117,16 @@ namespace CompanyApi.Controllers
             return Ok(employee);
         }
 
+        [HttpDelete("{id}")]
+        public ActionResult DeleteCompany(string id)
+        {
+            var company = companies.FirstOrDefault(c => c.Id == id);
+            if (company == null) return NotFound();
+
+            companies.Remove(company);
+            return NoContent();
+        }
+
 
         [HttpDelete]
         public void ClearData()
