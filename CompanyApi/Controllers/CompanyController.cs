@@ -72,7 +72,7 @@ namespace CompanyApi.Controllers
 
         }
 
-        [HttpPost("{id}")]
+        [HttpPost("{companyId}")]
         public ActionResult<Company> UpdateEmployeeToCompany(string companyId, [FromBody] Employee employee)
         {
             if (!companies.Exists(company => company.Id.Equals(companyId)))

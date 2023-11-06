@@ -219,5 +219,19 @@ namespace CompanyApiTest
 
         }
 
+        [Fact]
+        public async Task Should_return_404_when_update_company_given_wrong_companyId()
+        {
+            await ClearDataAsync();
+            var httpResponseMessage = await httpClient.PostAsync("api/companies", SerializeObjectToContent(new CreateCompanyRequest("Ski")));
+            var newCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+
+            Employee employee = new Employee("worker", "1234");
+            HttpResponseMessage httpResponseMessage3 = await httpClient.PostAsJsonAsync($"api/companies/12333", employee);
+
+            Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage3.StatusCode);
+
+        }
+
     }
 }
