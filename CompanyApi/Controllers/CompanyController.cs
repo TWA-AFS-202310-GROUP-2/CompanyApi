@@ -119,10 +119,24 @@ namespace CompanyApi.Controllers
         }
 
         [HttpDelete]
-        public ActionResult<string> ClearData()
-        { 
+        public void ClearData()
+        {
             companies.Clear();
-            return StatusCode(StatusCodes.Status204NoContent);
+        }
+
+        [HttpDelete("{CompanyId}")]
+        public ActionResult<string> DeleteCompany(string CompanyId)
+        {
+            for (int i = 0; i < companies.Count; i++)
+            {
+                if (companies[i].Id == CompanyId)
+                {
+                    companies.RemoveAt(i);
+                    return StatusCode(StatusCodes.Status204NoContent);
+                }
+            }
+
+            return StatusCode(StatusCodes.Status404NotFound);
         }
 
         [HttpDelete("{CompanyId}/employees/{EmployeeId}")]
@@ -140,8 +154,6 @@ namespace CompanyApi.Controllers
                             return StatusCode(StatusCodes.Status204NoContent);
                         }
                     }
-
-                    
                 }
             }
 

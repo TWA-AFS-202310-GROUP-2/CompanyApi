@@ -374,5 +374,26 @@ namespace CompanyApiTest
             Assert.Equal(employeeGiven2.Name, employeeCreated2.Name);
             Assert.Equal(employeeGiven2.Salary, employeeCreated2.Salary);
         }
+
+        [Fact]
+        public async Task Should_return_204_when_delete_company()
+        {
+            await ClearDataAsync();
+            Company companyGiven = new Company("BlueSky Digital Media");
+
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(
+                "/api/companies",
+                SerializeObjectToContent(companyGiven)
+            );
+            Company? company = await DeserializeTo<Company>(httpResponseMessage);
+
+            // Given
+            HttpResponseMessage httpResponseMessage2 = await httpClient.DeleteAsync(
+                "/api/companies/" + company.Id
+            );
+
+            Assert.Equal(HttpStatusCode.NoContent, httpResponseMessage2.StatusCode);
+        }
     }
 }
