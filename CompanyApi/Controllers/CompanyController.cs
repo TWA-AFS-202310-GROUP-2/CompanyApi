@@ -52,7 +52,22 @@ namespace CompanyApi.Controllers
             }
             return NotFound();
         }
-
+        [HttpPost("{name}/employee")]
+        public ActionResult<List<Employee>> CreateEmployee(string name, Employee employee)
+        {
+            if (!companies.Exists(company => company.Name.Equals(name)))
+            {
+                return BadRequest();
+            }
+            List<Employee> employeesOfCompany = new List<Employee>();
+            Employee newemployee = new Employee()
+            {
+                Name = employee.Name,
+                Salary = employee.Salary,
+            };
+            employeesOfCompany.Add(newemployee);
+            return StatusCode(StatusCodes.Status201Created, employeesOfCompany);
+        }
 
         private static List<Company> GenerateCompanies(int pageIndex, int pageSize)
         {

@@ -1,7 +1,9 @@
 using CompanyApi;
+using CompanyApi.Controllers;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Xml.Linq;
@@ -37,6 +39,26 @@ namespace CompanyApiTest
             Assert.NotNull(companyCreated);
             Assert.NotNull(companyCreated.Id);
             Assert.Equal(companyGiven.Name, companyCreated.Name);
+        }
+
+        [Fact]
+        public async Task Should_return_created_employee_in_an_company_with_status_201_when_create_cpmoany_given_a_company_name()
+        {
+            // Given
+            string name = "company1";
+            Company companyGiven = new Company(name);
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(
+                "/api/companies",
+                SerializeObjectToContent(companyGiven)
+            );
+            Company? companyCreated = await DeserializeTo<Company>(httpResponseMessage);
+            // When
+            Employee employee = new Employee { Name = "E1",Salary = 500 };
+            HttpResponseMessage httpResponseMessageEmployee = await httpClient.PostAsJsonAsync($"api/companies/{name}/employee", employee);
+            var employee2 = await httpResponseMessageEmployee.Content.ReadFromJsonAsync<List<Employee>>();
+            // Then
+            Assert.Equal(HttpStatusCode.Created, httpResponseMessageEmployee.StatusCode);
+            Assert.Equal("E1", employee2[0].Name);
         }
 
         [Fact]
