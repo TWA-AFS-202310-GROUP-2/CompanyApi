@@ -75,6 +75,16 @@ Content-Type: application/json; charset=utf-8
 ##################################################################################
 ####
 
+## AC7 Delete Employee by CompanyId and EmployeeId
+DELETE https://{{hostname}}:{{port}}/api/companies/{companyId}/employees/{employeeId}
+ 
+### Response:
+### Case1: Sucess, 204 NO Content
+### Case2: 404 not found
+
+##################################################################################
+####
+
 ## AC8 Get list of Employee By Company Id
 Get https://{{hostname}}:{{port}}/api/companies/{companyId}/employees
  

@@ -2,6 +2,7 @@ using CompanyApi;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using NuGet.Frameworks;
+using System.ComponentModel.Design;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
@@ -259,6 +260,42 @@ namespace CompanyApiTest
             Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage2.StatusCode);
         }
 
+
+        [Fact]
+        public async Task Should_return_204_when_delete_successful_employee_given_companyId_and_EmployeeId()
+        {
+            //given
+            await ClearDataAsync();
+
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync("api/companies", companyGiven);
+            var company = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+
+            var employee = new EmployeeRequest(3000, "Tom");
+
+            HttpResponseMessage httpResponseMessage2 = await httpClient.PostAsJsonAsync($"api/companies/{company.Id}/employees", employee);
+
+            var employee2 = await httpResponseMessage2.Content.ReadFromJsonAsync<Employee>();
+
+            //when
+            HttpResponseMessage httpResponseMessageFinal = await httpClient.DeleteAsync($"/api/companies/{company.Id}/employees/{employee2.Id}");
+
+            //then
+            Assert.Equal(HttpStatusCode.NoContent, httpResponseMessageFinal.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_404_when_delete_employee_given_not_exist_companyId_and_EmployeeId()
+        {
+            //given
+            await ClearDataAsync();
+
+            //when
+            HttpResponseMessage httpResponseMessageFinal = await httpClient.DeleteAsync($"/api/companies/111/employees/222");
+
+            //then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessageFinal.StatusCode);
+        }
 
 
         private async Task<T?> DeserializeTo<T>(HttpResponseMessage httpResponseMessage)
