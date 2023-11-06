@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.Design;
 
 namespace CompanyApi.Controllers
 {
@@ -87,6 +88,29 @@ namespace CompanyApi.Controllers
         { 
             companies.Clear();
             return StatusCode(StatusCodes.Status204NoContent);
+        }
+
+        [HttpDelete("{CompanyId}/employees/{EmployeeId}")]
+        public ActionResult<string> DeleteEmployee(string CompanyId, string EmployeeId)
+        {
+            for (int i = 0; i < companies.Count; i++)
+            {
+                if (companies[i].Id == CompanyId)
+                {
+                    for (int j = 0; i < companies[i].EmployeeList.Count; j++)
+                    {
+                        if (companies[i].EmployeeList[j].Id == EmployeeId)
+                        {
+                            companies[i].EmployeeList.RemoveAt(j);
+                            return StatusCode(StatusCodes.Status204NoContent);
+                        }
+                    }
+
+                    
+                }
+            }
+
+            return StatusCode(StatusCodes.Status404NotFound);
         }
     }
 }

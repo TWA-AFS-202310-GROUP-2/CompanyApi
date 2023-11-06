@@ -23,13 +23,13 @@ namespace CompanyApiTest
             // Given
             await ClearDataAsync();
             Company companyGiven = new Company("BlueSky Digital Media");
-            
+
             // When
             HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(
-                "/api/companies", 
+                "/api/companies",
                 SerializeObjectToContent(companyGiven)
             );
-           
+
             // Then
             Assert.Equal(HttpStatusCode.Created, httpResponseMessage.StatusCode);
             Company? companyCreated = await DeserializeTo<Company>(httpResponseMessage);
@@ -48,7 +48,7 @@ namespace CompanyApiTest
             // When
             await httpClient.PostAsync("/api/companies", SerializeObjectToContent(companyGiven));
             HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(
-                "/api/companies", 
+                "/api/companies",
                 SerializeObjectToContent(companyGiven)
             );
             // Then
@@ -61,10 +61,10 @@ namespace CompanyApiTest
             // Given
             await ClearDataAsync();
             StringContent content = new StringContent("{\"unknownField\": \"BlueSky Digital Media\"}", Encoding.UTF8, "application/json");
-          
+
             // When
             HttpResponseMessage httpResponseMessage = await httpClient.PostAsync("/api/companies", content);
-           
+
             // Then
             Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage.StatusCode);
         }
@@ -261,6 +261,38 @@ namespace CompanyApiTest
             Assert.NotNull(employeeGiven);
             Assert.NotNull(employeeGiven.Id);
             Assert.Equal(employeeGiven.Name, employeeCreated.Name);
+        }
+
+        [Fact]
+        public async Task Should_return_204_when_delete_employee()
+        {
+            // Given
+            await ClearDataAsync();
+            Company companyGiven = new Company("BlueSky Digital Media");
+
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(
+                "/api/companies",
+                SerializeObjectToContent(companyGiven)
+            );
+
+            Employee employeeGiven = new Employee("Employee1", 100);
+            Company? companyCreated = await DeserializeTo<Company>(httpResponseMessage);
+
+            // When
+            HttpResponseMessage httpResponseMessage2 = await httpClient.PostAsync(
+                "/api/companies/" + companyCreated.Id + "/employees",
+                SerializeObjectToContent(employeeGiven)
+            );
+
+            Employee? employeeCreated = await DeserializeTo<Employee>(httpResponseMessage2);
+
+            HttpResponseMessage httpResponseMessage3 = await httpClient.DeleteAsync(
+                "/api/companies/" + companyCreated.Id + "/employees/" + employeeCreated.Id
+            );
+
+            // Then
+            Assert.Equal(HttpStatusCode.NoContent, httpResponseMessage3.StatusCode);
         }
     }
 }
