@@ -341,6 +341,70 @@ namespace CompanyApiTest
             Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage.StatusCode);
         }
 
+        [Fact]
+        public async Task Should_return_not_found_when_delete_employee_given_not_existed_company_id()
+        {
+            // Given
+            await ClearDataAsync();
+            var httpResponseMessage = await httpClient.DeleteAsync($"/api/companies/{Guid.NewGuid().ToString()}/employees/{Guid.NewGuid().ToString()}");
+
+            // When
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_not_found_when_delete_employee_given_not_existed_employee_id_but_existed_company_id()
+        {
+            // Given
+            await ClearDataAsync();
+            var companyGiven = new CreateCompanyRequest
+            {
+                Name = "BlueSky Digital Media"
+            };
+            var httpResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var companyCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            Assert.NotNull(companyCreated);
+            Assert.NotNull(companyCreated.Id);
+
+            // When
+            httpResponseMessage = await httpClient.DeleteAsync($"/api/companies/{companyCreated.Id}/employees/{Guid.NewGuid().ToString()}");
+
+            // Then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_no_content_when_delete_employee_given_existed_employee_id()
+        {
+            // Given
+            await ClearDataAsync();
+            var companyGiven = new CreateCompanyRequest
+            {
+                Name = "BlueSky Digital Media"
+            };
+            var httpResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var companyCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            Assert.NotNull(companyCreated);
+            Assert.NotNull(companyCreated.Id);
+            var employeeGiven = new CreateEmployeeRequest
+            {
+                Name = "Tom",
+                Salary = 10000,
+                CompanyId = companyCreated.Id
+            };
+            httpResponseMessage = await httpClient.PostAsJsonAsync($"/api/companies/{companyCreated.Id}/employees", employeeGiven);
+            var employeeCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Employee>();
+            Assert.NotNull(employeeCreated);
+            Assert.NotNull(employeeCreated.Id);
+            var companyAll = await httpClient.GetFromJsonAsync<List<Company>>("/api/companies");
+
+            // When
+            httpResponseMessage = await httpClient.DeleteAsync($"/api/companies/{companyCreated.Id}/employees/{employeeCreated.Id}");
+
+            // Then
+            Assert.Equal(HttpStatusCode.NoContent, httpResponseMessage.StatusCode);
+        }
+
         private async Task ClearDataAsync()
         {
             await httpClient.DeleteAsync("/api/companies");

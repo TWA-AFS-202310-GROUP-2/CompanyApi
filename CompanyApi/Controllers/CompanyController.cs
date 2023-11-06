@@ -76,10 +76,24 @@ namespace CompanyApi.Controllers
             var company = companies.FirstOrDefault(c => c.Id == companyId);
             if (company == null) return NotFound();
 
-            Employee employee = new Employee(request.Name, request.Salary, request.CompanyId);
-            company.Employees.Add(employee);
+            Employee employee = new(request.Name, request.Salary, request.CompanyId);
+            company.AddEmployee(employee);
             return StatusCode(StatusCodes.Status201Created, employee);
         }
+
+        [HttpDelete("{companyId}/employees/{employeeId}")]
+        public ActionResult DeleteEmployee(string companyId, string employeeId)
+        {
+            var company = companies.FirstOrDefault(c => c.Id == companyId);
+            if (company == null) return NotFound();
+
+            var employee = company.Employees.FirstOrDefault(e => e.Id == employeeId);
+            if (employee == null) return NotFound();
+
+            company.Employees.Remove(employee);
+            return NoContent();
+        }
+
 
         [HttpDelete]
         public void ClearData()
