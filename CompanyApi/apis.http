@@ -59,3 +59,25 @@ Content-Type: application/json; charset=utf-8
 ### Case2: 404 Company NOT Found
 
 ######################################################################################
+
+## AC6 Post Employee to a Company 
+PUT https://{{hostname}}:{{port}}/api/Companies/{companyID}
+Content-Type: application/json; charset=utf-8
+
+{
+  "name": "Alice",
+   "id":"xxxxxxxxx"
+}
+### Response: 
+### Case1: Sucess, 201 Created
+### Case2: 404 Company NOT Found
+
+######################################################################################
+## AC5 Delete a Employee to a Company 
+DELETE https://{{hostname}}:{{port}}/api/Companies/{companyID}/{employeeID}
+
+### Response: 
+### Case1: Sucess, 204 NO Content
+### Case2: 404 Company NOT Found
+
+######################################################################################
