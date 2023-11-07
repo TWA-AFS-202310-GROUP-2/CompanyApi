@@ -54,7 +54,7 @@ namespace CompanyApiTest
             Company? companyCreated = await DeserializeTo<Company>(httpResponseMessage);
             // When
             Employee employee = new Employee { Name = "E1",Salary = 500,Company = name};
-            HttpResponseMessage httpResponseMessageEmployee = await httpClient.PostAsJsonAsync($"api/companies/{name}/employee", employee);
+            HttpResponseMessage httpResponseMessageEmployee = await httpClient.PostAsJsonAsync($"api/companies/{companyCreated.Id}/employee", employee);
             var employee2 = await httpResponseMessageEmployee.Content.ReadFromJsonAsync<List<Employee>>();
             // Then
             Assert.Equal(HttpStatusCode.Created, httpResponseMessageEmployee.StatusCode);
@@ -75,12 +75,13 @@ namespace CompanyApiTest
             );
             Company? companyCreated = await DeserializeTo<Company>(httpResponseMessage);
             Employee employee = new Employee { Name = emplyeeName, Salary = 500, Company = name };
-            HttpResponseMessage httpResponseMessageEmployee = await httpClient.PostAsJsonAsync($"api/companies/{name}/employee", employee);
+            HttpResponseMessage httpResponseMessageEmployee = await httpClient.PostAsJsonAsync($"api/companies/{companyCreated.Id}/employee", employee);
             var employee2 = await httpResponseMessageEmployee.Content.ReadFromJsonAsync<List<Employee>>();
             //when
-            var result = await httpClient.DeleteAsync($"api/companies/{name}/employee/{emplyeeName}");
+            string deleteUrl = $"api/companies/{companyCreated.Id}/employees/{employee2[0].Id}";
+            HttpResponseMessage httpDeleteMessageEmployee = await httpClient.DeleteAsync(deleteUrl);
             //then
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, httpDeleteMessageEmployee.StatusCode);
 
         }
         [Fact]
@@ -154,9 +155,10 @@ namespace CompanyApiTest
             await ClearDataAsync();
             string name = "test by id";
             Company givencompany = new Company(name);
-            await httpClient.PostAsync("/api/companies", SerializeObjectToContent(givencompany));
+            HttpResponseMessage httpRequestMessagePost = await httpClient.PostAsJsonAsync("/api/companies", givencompany);
+            Company companyCreated = await httpRequestMessagePost.Content.ReadFromJsonAsync<Company>();
             //When
-            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"api/companies/{name}");
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"api/companies/{companyCreated.Id}");
             Company selectedcompany = await DeserializeTo<Company>(httpResponseMessage);
             //then
             Assert.Equal(givencompany.Name, selectedcompany.Name);
@@ -182,15 +184,17 @@ namespace CompanyApiTest
         public async Task Should_return_updated_companiy_When_put_Given_update_name()
         {
             //Given
+            await ClearDataAsync();
             string name = "BlueSky Digital Media";
-            Company companyGiven = new Company("BlueSky Digital Media");
-            await httpClient.PostAsync("/api/companies", SerializeObjectToContent(companyGiven));
-            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"api/companies/{name}");
+            Company companyGiven = new Company(name);
+            HttpResponseMessage httpRequestMessagePost = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            Company companyCreated = await httpRequestMessagePost.Content.ReadFromJsonAsync<Company>();
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"api/companies/{companyCreated.Id}");
             Company selectedcompany = await DeserializeTo<Company>(httpResponseMessage);
             //when
             CreateCompanyRequest createCompanyRequest = new CreateCompanyRequest { Name = "new name" };
             HttpResponseMessage httpPutMessage = await httpClient.PutAsJsonAsync($"/api/companies/{selectedcompany.Id}", createCompanyRequest);
-            Company? companyUpdated = await httpPutMessage.Content.ReadFromJsonAsync<Company>();
+            Company? companyUpdated = await DeserializeTo<Company>(httpPutMessage);
             //then
             Assert.Equal(HttpStatusCode.OK, httpPutMessage.StatusCode);
             Assert.Equal("new name", companyUpdated.Name);

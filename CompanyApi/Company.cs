@@ -12,6 +12,7 @@ namespace CompanyApi
         {
             Id = Guid.NewGuid().ToString();
             Name = name;
+            employees = new List<Employee>();
         }
 
         public string Id { get; set; }

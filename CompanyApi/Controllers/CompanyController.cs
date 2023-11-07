@@ -29,10 +29,10 @@ namespace CompanyApi.Controllers
             return companies;
         }
 
-        [HttpGet("{name}")]
-        public Company Get(string name)
+        [HttpGet("{id}")]
+        public Company Get(string id)
         {
-            return companies.Where(company => company.Name == name).FirstOrDefault();
+            return companies.Where(company => company.Id == id).FirstOrDefault();
         }
 
         [HttpGet("pageIndex={pageIndex}&pageSize={pageSize}")]
@@ -53,35 +53,32 @@ namespace CompanyApi.Controllers
             }
             return NotFound();
         }
-        [HttpPost("{name}/employee")]
-        public ActionResult<List<Employee>> CreateEmployee(string name, Employee employee)
+        [HttpPost("{CompanyId}/employee")]
+        public ActionResult<List<Employee>> CreateEmployee(string CompanyId, Employee employee)
         {
-            //if (!companies.Exists(company => company.Name.Equals(name)))
-            //{
-            //    return BadRequest();
-            //}
+            var company = companies.Find(c => c.Id == CompanyId);
             List<Employee> employeesOfCompany = new List<Employee>();
             Employee newemployee = new Employee()
             {
                 Name = employee.Name,
                 Salary = employee.Salary,
-                Company = name,
+                Company = "company"+ CompanyId,
             };
             employeesOfCompany.Add(newemployee);
+            company.employees = employeesOfCompany;
             return StatusCode(StatusCodes.Status201Created, employeesOfCompany);
         }
-        [HttpDelete("{name}/employee/{emplyeeName}")]
-        public ActionResult<Company> DeleteEmployee(string name,string employeeName)
+        [HttpDelete("{CompanyId}/employees/{EmployeeId}")]
+        public ActionResult<string> DeleteEmployee(string CompanyId, string EmployeeId)
         {
-            Company? company = companies.Find(c => c.Name == name);
-            var employees = company.employees;
-            Employee? employeeToDelete =employees.Find(e => e.Name == employeeName);
+            Company? company = companies.Where(company => company.Id == CompanyId).FirstOrDefault(); 
+            Employee? employeeToDelete = company.employees.Find(e => e.Id == EmployeeId);
             if (employeeToDelete == null)
             {
-                return NotFound();
+                return StatusCode(StatusCodes.Status404NotFound);
             }
             company.employees.Remove(employeeToDelete);
-            return Ok(company);
+            return StatusCode(StatusCodes.Status204NoContent);
         }
 
         private static List<Company> GenerateCompanies(int pageIndex, int pageSize)

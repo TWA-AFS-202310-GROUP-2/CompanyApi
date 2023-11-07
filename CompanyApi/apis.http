@@ -60,7 +60,7 @@ Content-Type: application/json; charset=utf-8
 
 ######################################################################################
 ## AC6 Add an Employee to a Company
-POST http://localhost:5000/api/companies/{companyId}/employees
+POST http://{{hostname}}:{{port}}/api/companies/{name}/employee
 Content-Type: application/json
  
 {
@@ -74,3 +74,10 @@ Content-Type: application/json
 ### Case3:  Other Bad Reqeust ( Request Body Not Valid )
 
 ######################################################################################
+DELETE http://{{hostname}}:{{port}}/api/companies/{name}/employee/{employeeName}
+Content-Type: application/json
+ 
+{
+  "name": "New Employee",
+  "salary": 50000
+}
