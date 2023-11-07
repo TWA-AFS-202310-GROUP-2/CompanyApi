@@ -101,7 +101,7 @@ namespace CompanyApi.Controllers
             }
             company.Employee = null;
             companies[companies.IndexOf(companies.Find(cp => cp.Id == companyId))] = company;
-            return Ok(company);
+            return NoContent();
         }
 
         [HttpDelete]
