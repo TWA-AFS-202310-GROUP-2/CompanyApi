@@ -59,3 +59,25 @@ Content-Type: application/json; charset=utf-8
 ### Case2: 404 Company NOT Found
 
 ######################################################################################
+## AC6 Add an Employee to a Company
+POST http://{{hostname}}:{{port}}/api/companies/{name}/employee
+Content-Type: application/json
+ 
+{
+  "name": "New Employee",
+  "salary": 50000
+}
+
+## Response:
+### Case1:  Company Created Success, Return Company employees with Status Created( 201 )
+### Case2:  Company Name Exsiting, Return 400 Bad request
+### Case3:  Other Bad Reqeust ( Request Body Not Valid )
+
+######################################################################################
+DELETE http://{{hostname}}:{{port}}/api/companies/{name}/employee/{employeeName}
+Content-Type: application/json
+ 
+{
+  "name": "New Employee",
+  "salary": 50000
+}

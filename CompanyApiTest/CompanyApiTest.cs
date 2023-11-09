@@ -1,8 +1,12 @@
 using CompanyApi;
+using CompanyApi.Controllers;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
+using System.Xml.Linq;
 
 namespace CompanyApiTest
 {
@@ -37,6 +41,49 @@ namespace CompanyApiTest
             Assert.Equal(companyGiven.Name, companyCreated.Name);
         }
 
+        [Fact]
+        public async Task Should_return_created_employee_in_an_company_with_status_201_when_create_cpmoany_given_a_company_name()
+        {
+            // Given
+            string name = "company1";
+            Company companyGiven = new Company(name);
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(
+                "/api/companies",
+                SerializeObjectToContent(companyGiven)
+            );
+            Company? companyCreated = await DeserializeTo<Company>(httpResponseMessage);
+            // When
+            Employee employee = new Employee { Name = "E1",Salary = 500,Company = name};
+            HttpResponseMessage httpResponseMessageEmployee = await httpClient.PostAsJsonAsync($"api/companies/{companyCreated.Id}/employee", employee);
+            var employee2 = await httpResponseMessageEmployee.Content.ReadFromJsonAsync<List<Employee>>();
+            // Then
+            Assert.Equal(HttpStatusCode.Created, httpResponseMessageEmployee.StatusCode);
+            Assert.Equal("E1", employee2[0].Name);
+        }
+
+        [Fact]
+        public async Task Should_return_OK_reqeust_when_delete_an_employee_given_a_Employeename()
+        {
+            //Given
+            await ClearDataAsync();
+            string name = "company1";
+            string emplyeeName = "e1";
+            Company companyGiven = new Company(name);
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(
+                "/api/companies",
+                SerializeObjectToContent(companyGiven)
+            );
+            Company? companyCreated = await DeserializeTo<Company>(httpResponseMessage);
+            Employee employee = new Employee { Name = emplyeeName, Salary = 500, Company = name };
+            HttpResponseMessage httpResponseMessageEmployee = await httpClient.PostAsJsonAsync($"api/companies/{companyCreated.Id}/employee", employee);
+            var employee2 = await httpResponseMessageEmployee.Content.ReadFromJsonAsync<List<Employee>>();
+            //when
+            string deleteUrl = $"api/companies/{companyCreated.Id}/employees/{employee2[0].Id}";
+            HttpResponseMessage httpDeleteMessageEmployee = await httpClient.DeleteAsync(deleteUrl);
+            //then
+            Assert.Equal(HttpStatusCode.NoContent, httpDeleteMessageEmployee.StatusCode);
+
+        }
         [Fact]
         public async Task Should_return_bad_reqeust_when_create_company_given_a_existed_company_name()
         {
@@ -75,9 +122,97 @@ namespace CompanyApiTest
             return deserializedObject;
         }
 
+        [Fact]
+        public async Task Should_return_all_companied_when_get_given_no_company()
+        {
+            //Given
+            await ClearDataAsync();
+            //when
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync("api/companies");
+            List<Company> companyCreated = await DeserializeTo<List<Company>>(httpResponseMessage);
+            //then
+            Assert.Equal(0, companyCreated.Count);
+        }
+
+        [Fact]
+        public async Task Should_return_all_companied_when_get_given_an_company()
+        {
+            //Given
+            await ClearDataAsync();
+            Company companyGiven = new Company("BlueSky Digital Media");
+            await httpClient.PostAsync("/api/companies", SerializeObjectToContent(companyGiven));
+            //when
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync("api/companies");
+            List<Company> allcompany = await DeserializeTo<List<Company>>(httpResponseMessage);
+            //then
+            Assert.Equal(companyGiven.Name, allcompany[0].Name);
+        }
+
+        [Fact]
+        public async Task Should_return_an_selected_company_When_get_Given_an_name()
+        {
+            //Given
+            await ClearDataAsync();
+            string name = "test by id";
+            Company givencompany = new Company(name);
+            HttpResponseMessage httpRequestMessagePost = await httpClient.PostAsJsonAsync("/api/companies", givencompany);
+            Company companyCreated = await httpRequestMessagePost.Content.ReadFromJsonAsync<Company>();
+            //When
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"api/companies/{companyCreated.Id}");
+            Company selectedcompany = await DeserializeTo<Company>(httpResponseMessage);
+            //then
+            Assert.Equal(givencompany.Name, selectedcompany.Name);
+        }
+
+        [Fact]
+        public async Task Should_return_pagesize_companies_from_page_index_When_get_Given_x_size_y_index()
+        {
+            //Given
+            await ClearDataAsync();
+            int pageIndex = 5;
+            int pageSize = 2;
+            GenerateCompanies(pageIndex, pageSize);
+            //when
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"api/companies/pageIndex={pageIndex}&pageSize={pageSize}");
+            List <Company> companiesOnPageIndex = await DeserializeTo<List<Company>>(httpResponseMessage);
+            //then
+            Assert.Equal("new company 9", companiesOnPageIndex[0].Name);
+            Assert.Equal("new company 10", companiesOnPageIndex[1].Name);
+        }
+
+        [Fact]
+        public async Task Should_return_updated_companiy_When_put_Given_update_name()
+        {
+            //Given
+            await ClearDataAsync();
+            string name = "BlueSky Digital Media";
+            Company companyGiven = new Company(name);
+            HttpResponseMessage httpRequestMessagePost = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            Company companyCreated = await httpRequestMessagePost.Content.ReadFromJsonAsync<Company>();
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"api/companies/{companyCreated.Id}");
+            Company selectedcompany = await DeserializeTo<Company>(httpResponseMessage);
+            //when
+            CreateCompanyRequest createCompanyRequest = new CreateCompanyRequest { Name = "new name" };
+            HttpResponseMessage httpPutMessage = await httpClient.PutAsJsonAsync($"/api/companies/{selectedcompany.Id}", createCompanyRequest);
+            Company? companyUpdated = await DeserializeTo<Company>(httpPutMessage);
+            //then
+            Assert.Equal(HttpStatusCode.OK, httpPutMessage.StatusCode);
+            Assert.Equal("new name", companyUpdated.Name);
+        }
         private static StringContent SerializeObjectToContent<T>(T objectGiven)
         {
             return new StringContent(JsonConvert.SerializeObject(objectGiven), Encoding.UTF8, "application/json");
+        }
+        private static List<Company> GenerateCompanies(int pageIndex, int pageSize)
+        {
+            List<Company> companies = new List<Company>();
+            for (int i = 1; i <= pageIndex * pageSize; i++)
+            {
+                Company newcompany = new Company($"new company {i}");
+                companies.Add(newcompany);
+            }
+
+            return companies;
         }
 
         private async Task ClearDataAsync()
